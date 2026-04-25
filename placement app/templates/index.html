@@ -2,200 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Placement Prediction</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Placement Prediction</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
-    <!-- Canvas for custom JS particles -->
-    <canvas id="particles-js"></canvas>
-    
-    <div class="blob"></div>
-    
-    <div class="container-wrapper">
-        <div class="container" id="tiltCard">
-            <div class="header">
-                <h1>Student Placement Prediction</h1>
-            </div>
 
-            <form action="/predict" method="POST">
-                <div class="form-layout">
-                    
-                    <!-- LEFT COLUMN (5 inputs) -->
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="Age">Age</label>
-                            <input type="number" id="Age" name="Age" min="18" max="40" value="21" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="Gender">Gender</label>
-                            <select id="Gender" name="Gender" required>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
+<div class="container">
 
-                        <div class="form-group">
-                            <label for="Degree">Degree</label>
-                            <select id="Degree" name="Degree" required>
-                                <option value="B.Tech">B.Tech</option>
-                                <option value="BCA">BCA</option>
-                                <option value="MCA">MCA</option>
-                                <option value="B.Sc">B.Sc</option>
-                            </select>
-                        </div>
+    <h2>🎯 Student Placement Prediction</h2>
 
-                        <div class="form-group">
-                            <label for="CGPA">Academic CGPA (0-10)</label>
-                            <div class="range-container">
-                                <input type="range" id="CGPA" name="CGPA" min="0" max="10" step="0.1" value="7.5" required oninput="updateVal('CGPA', 'cgpa_val')">
-                                <span class="range-value" id="cgpa_val">7.5</span>
-                            </div>
-                        </div>
+    <form action="/predict" method="post">
 
-                        <div class="form-group">
-                            <label for="Internships">Internships Completed</label>
-                            <input type="number" id="Internships" name="Internships" min="0" max="10" value="1" required>
-                        </div>
-                    </div> <!-- End Left Column -->
-
-                    <!-- RIGHT COLUMN (5 inputs) -->
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label for="Projects">Projects Completed</label>
-                            <input type="number" id="Projects" name="Projects" min="0" max="20" value="2" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="Coding_Skills">Coding Skills (1-10)</label>
-                            <div class="range-container">
-                                <input type="range" id="Coding_Skills" name="Coding_Skills" min="1" max="10" step="1" value="7" required oninput="updateVal('Coding_Skills', 'code_val')">
-                                <span class="range-value" id="code_val">7</span>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="Communication_Skills">Communication Skills (1-10)</label>
-                            <div class="range-container">
-                                <input type="range" id="Communication_Skills" name="Communication_Skills" min="1" max="10" step="1" value="7" required oninput="updateVal('Communication_Skills', 'comm_val')">
-                                <span class="range-value" id="comm_val">7</span>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="Aptitude_Test_Score">Aptitude Score (1-100)</label>
-                            <input type="number" id="Aptitude_Test_Score" name="Aptitude_Test_Score" min="1" max="100" value="65" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="Backlogs">Active Backlogs</label>
-                            <input type="number" id="Backlogs" name="Backlogs" min="0" max="10" value="0" required>
-                        </div>
-                    </div> <!-- End Right Column -->
-
-                </div> <!-- End form-layout -->
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    Predict Ans
-                </button>
-            </form>
+        <div class="form-group">
+            <label>CGPA</label>
+            <input type="number" step="0.1" name="CGPA" required>
         </div>
-    </div>
 
-    <!-- Interactive JavaScript Features -->
-    <script>
-        // Update slider values dynamically
-        function updateVal(id, textId) {
-            document.getElementById(textId).innerText = document.getElementById(id).value;
-        }
+        <div class="form-group">
+            <label>Internships</label>
+            <input type="number" name="Internships" required>
+        </div>
 
-        // Vanilla JS 3D Tilt Effect on Container
-        const card = document.getElementById('tiltCard');
-        const wrapper = document.querySelector('.container-wrapper');
+        <div class="form-group">
+            <label>Projects</label>
+            <input type="number" name="Projects" required>
+        </div>
 
-        wrapper.addEventListener('mousemove', (e) => {
-            const rect = wrapper.getBoundingClientRect();
-            // Calculate mouse position relative to container center
-            const x = e.clientX - rect.left - (rect.width / 2);
-            const y = e.clientY - rect.top - (rect.height / 2);
-            
-            // Adjust tilt intensity (higher denominator = less tilt)
-            const rotateX =  (y / (rect.height / 2)) * -5; 
-            const rotateY = (x / (rect.width / 2)) * 5;
+        <div class="form-group">
+            <label>Coding Skills (1–10)</label>
+            <input type="number" name="Coding_Skills" min="1" max="10" required>
+        </div>
 
-            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        });
+        <div class="form-group">
+            <label>Communication Skills (1–10)</label>
+            <input type="number" name="Communication_Skills" min="1" max="10" required>
+        </div>
 
-        wrapper.addEventListener('mouseleave', () => {
-            // Reset nicely when mouse leaves
-            card.style.transform = `rotateX(0deg) rotateY(0deg)`;
-            card.style.transition = `transform 0.5s ease`;
-        });
+        <div class="form-group">
+            <label>Aptitude Score</label>
+            <input type="number" name="Aptitude_Test_Score" required>
+        </div>
 
-        wrapper.addEventListener('mouseenter', () => {
-            card.style.transition = `transform 0.1s`; // remove smooth return transition while moving
-        });
+        <div class="form-group">
+            <label>Backlogs</label>
+            <input type="number" name="Backlogs" required>
+        </div>
 
+        <div class="form-group">
+            <label>Gender</label>
+            <select name="Gender">
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+        </div>
 
-        // Basic Canvas Particle System JS implementation
-        const canvas = document.getElementById('particles-js');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        <div class="form-group">
+            <label>Degree</label>
+            <select name="Degree">
+                <option>B.Tech</option>
+                <option>BCA</option>
+                <option>MCA</option>
+                <option>B.Sc</option>
+            </select>
+        </div>
 
-        let particlesArray = [];
-        const numberOfParticles = 80;
+        <button type="submit">🚀 Predict Placement</button>
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.5;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
-                this.color = 'rgba(255, 255, 255, 0.4)';
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                // Bounce loop
-                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
+    </form>
 
-        function initParticles() {
-            particlesArray = [];
-            for (let i = 0; i < numberOfParticles; i++) {
-                particlesArray.push(new Particle());
-            }
-        }
+</div>
 
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-                particlesArray[i].draw();
-            }
-            requestAnimationFrame(animateParticles);
-        }
-
-        initParticles();
-        animateParticles();
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initParticles();
-        });
-    </script>
 </body>
 </html>

@@ -1,191 +1,43 @@
-:root {
-    --bg-color: #0f172a;
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Outfit', sans-serif;
-}
-
 body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    min-height: 100vh;
+    background: #0f172a;
+    color: white;
+    font-family: 'Outfit', sans-serif;
+
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 3rem 1rem;
-    position: relative;
-    overflow-x: hidden;
-}
-
-.blob {
-    position: fixed;
-    width: 800px;
-    height: 800px;
-    background: radial-gradient(circle, var(--blob-color, rgba(16, 185, 129, 0.2)) 0%, transparent 70%);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    z-index: -1;
-    filter: blur(60px);
-    animation: pulseBg 8s infinite alternate;
-}
-
-.blob.placed {
-    --blob-color: rgba(16, 185, 129, 0.2);
-}
-
-.blob.not-placed {
-    --blob-color: rgba(239, 68, 68, 0.2);
-}
-
-@keyframes pulseBg {
-    0% { transform: translate(-50%, -50%) scale(1); }
-    100% { transform: translate(-50%, -50%) scale(1.1); }
+    height: 100vh;
 }
 
 .container {
-    background: var(--card-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 3rem;
-    width: 100%;
-    max-width: 800px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    animation: slideIn 0.8s ease backwards;
+    background: rgba(30, 41, 59, 0.7);
+    padding: 40px;
+    border-radius: 20px;
+    width: 600px;
     text-align: center;
 }
 
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(40px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.result-badge {
-    display: inline-block;
-    margin: 0 auto 2rem auto;
-    padding: 1.5rem 3rem;
-    border-radius: 20px;
-    font-size: 2.5rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    background: rgba(0,0,0,0.2);
-    border: 2px solid;
-    animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards 0.3s;
-}
-
-.result-badge.placed {
-    border-color: var(--success);
-    color: var(--success);
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
-}
-
-.result-badge.not-placed {
-    border-color: var(--danger);
-    color: var(--danger);
-    box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
-}
-
-@keyframes popIn {
-    0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
-    100% { opacity: 1; transform: scale(1) rotate(0); }
-}
-
-.probability {
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    margin-bottom: 3rem;
-    animation: fadeIn 1s ease backwards 0.6s;
-}
-
-.probability span {
-    font-weight: 700;
-    font-size: 1.5rem;
-    color: var(--text-main);
-}
-
-.recommendations {
-    text-align: left;
-    background: rgba(15, 23, 42, 0.5);
-    padding: 2rem;
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.05);
-    animation: slideUp 1s ease backwards 0.9s;
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.recommendations h3 {
-    font-size: 1.4rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #818cf8;
-}
-
-.rec-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.rec-item {
-    position: relative;
-    padding-left: 2rem;
-    line-height: 1.6;
-    color: var(--text-main);
-}
-
-.rec-item::before {
-    content: "➔";
-    position: absolute;
-    left: 0;
-    color: #14b8a6;
+.result {
+    font-size: 40px;
     font-weight: bold;
+    margin-bottom: 20px;
 }
 
-.action-btns {
-    margin-top: 3rem;
-    animation: fadeIn 1s ease backwards 1.2s;
+.placed {
+    color: #10b981;
 }
 
-.btn {
+.not-placed {
+    color: #ef4444;
+}
+
+ul {
+    text-align: left;
+    margin-top: 20px;
+}
+
+a {
     display: inline-block;
-    text-decoration: none;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-main);
-    padding: 1rem 2rem;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    margin-top: 20px;
+    color: #6366f1;
 }

@@ -2,51 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Placement Prediction</title>
+    <title>Result</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
 </head>
+
 <body>
 
-    <div class="blob {% if prediction == 'Placed' %}placed{% else %}not-placed{% endif %}"></div>
+<div class="container">
 
-    <div class="container">
-        
-        <div class="result-badge {% if prediction == 'Placed' %}placed{% else %}not-placed{% endif %}">
-            {{ prediction }}
-        </div>
-
-        <div class="probability">
-            Placement Probability: <span>{{ probability }}%</span>
-        </div>
-
-        {% if prediction == 'Not Placed' %}
-        <div class="recommendations">
-            <h3>
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                AI Profile Insights (Recommendations)
-            </h3>
-            <ul class="rec-list">
-                {% for rec in recommendations %}
-                    <li class="rec-item">{{ rec }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% else %}
-        <div class="recommendations" style="text-align: center;">
-            <h3 style="justify-content: center; color: #4ade80;">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right: 8px;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                Excellent Profile!
-            </h3>
-            <p style="color: rgba(255, 255, 255, 0.8); margin-top: 15px;">You are well prepared and on track for placement. Keep up the great work and continue maintaining your skills!</p>
-        </div>
-        {% endif %}
-
-        <div class="action-btns">
-            <a href="/" class="btn">← recalculate</a>
-        </div>
+    <div class="result {{ 'placed' if prediction == 'Placed' else 'not-placed' }}">
+        {{ prediction }}
     </div>
+
+    <p><strong>Placement Probability:</strong> {{ probability }}%</p>
+
+    <h3>📌 Recommendations</h3>
+
+    <ul>
+        {% for rec in recommendations %}
+            <li>{{ rec }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/">🔙 Try Again</a>
+
+</div>
 
 </body>
 </html>
