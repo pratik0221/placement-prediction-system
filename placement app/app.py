@@ -58,12 +58,12 @@ def predict():
         gender = GENDER_MAP.get(form["Gender"], 1)
         degree = DEGREE_MAP.get(form["Degree"], 1)
 
-        # ✅ Feature Engineering (same as training)
+        #  Feature Engineering (same as training)
         avg_score = (cgpa + internships + projects) / 3
         total_skills = aptitude + comm + coding
         is_weak = 1 if cgpa < 6 else 0
 
-        # ✅ Correct order (12 features)
+        #  Correct order (12 features)
         data = np.array([[ 
             cgpa,
             internships,
