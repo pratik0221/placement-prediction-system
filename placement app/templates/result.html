@@ -2,32 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Result</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Placement prediction result and personalized recommendations.">
+    <title>Prediction Result | PlacementAI</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
 </head>
-
 <body>
 
+<!-- ── Navigation ─────────────────────────────────────────── -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="nav-icon">🎓</span>
+        <span>PlacementAI</span>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link" id="nav-home">🏠 Home</a>
+        <a href="/dashboard" class="nav-link" id="nav-dashboard">📊 Dashboard</a>
+    </div>
+</nav>
+
+<div class="page-wrapper">
 <div class="container">
 
+    <!-- Student info -->
+    <p class="student-info">
+        <span class="student-name">{{ student_name }}</span>
+        <span class="divider">·</span>
+        <span class="student-class">{{ student_class }}</span>
+    </p>
+
+    <!-- Update notice (shown only when an existing record was updated) -->
+    {% if is_update %}
+    <div style="
+        display:flex; align-items:center; gap:0.6rem;
+        background: rgba(245,158,11,0.12);
+        border: 1px solid rgba(245,158,11,0.4);
+        border-radius: 12px;
+        padding: 0.75rem 1.2rem;
+        margin-bottom: 1.2rem;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        color: #fbbf24;
+        font-weight: 600;
+    ">
+        <span style="font-size:1.2rem;">🔄</span>
+        Record updated — <strong>{{ student_name }}</strong> already existed in this class. Their prediction has been refreshed with the latest data.
+    </div>
+    {% endif %}
+
+    <!-- Result banner -->
     <div class="result {{ 'placed' if prediction == 'Placed' else 'not-placed' }}">
-        {{ prediction }}
+        {{ '🎉 Placed' if prediction == 'Placed' else '⚠️ Not Placed' }}
     </div>
 
-    <p><strong>Placement Probability:</strong> {{ probability }}%</p>
 
-    <h3> Recommendations</h3>
+    <!-- Probability -->
+    <div class="prob-wrap">
+        <span class="prob-label">Placement Probability</span>
+        <span class="prob-value">{{ probability }}%</span>
+    </div>
 
-    <ul>
+    <div class="prob-bar-wrap">
+        <div class="prob-bar {{ 'placed' if prediction == 'Placed' else 'not-placed' }}"
+             style="width: {{ probability }}%"></div>
+    </div>
+
+    <!-- Recommendations -->
+    <h3 class="rec-title">📌 Recommendations</h3>
+    <ul class="rec-list">
         {% for rec in recommendations %}
             <li>{{ rec }}</li>
         {% endfor %}
     </ul>
 
-    <a href="/">🔙 Try Again</a>
+    <div class="action-links">
+        <a href="/" class="btn-back">🔙 Try Again</a>
+        <a href="/dashboard" class="btn-dash">📊 View Dashboard</a>
+    </div>
 
+</div>
 </div>
 
 </body>

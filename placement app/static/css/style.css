@@ -1,76 +1,202 @@
+/* ============================================================
+   style.css  –  Prediction Form Page
+   ============================================================ */
+
+/* ── Design Tokens ────────────────────────────────────────── */
 :root {
-    --primary: #6366f1;
-    --bg: #0f172a;
-    --card: rgba(30, 41, 59, 0.7);
-    --text: #f8fafc;
-    --muted: #94a3b8;
+    --primary:       #6366f1;
+    --primary-dark:  #4f46e5;
+    --bg:            #080d1a;
+    --surface:       rgba(15, 23, 42, 0.85);
+    --card:          rgba(30, 41, 59, 0.75);
+    --border:        rgba(148, 163, 184, 0.12);
+    --text:          #f1f5f9;
+    --muted:         #94a3b8;
+    --green:         #10b981;
+    --red:           #ef4444;
 }
 
-* {
-    margin: 0;
-    padding: 0;
+/* ── Reset ────────────────────────────────────────────────── */
+*, *::before, *::after {
+    margin: 0; padding: 0;
     box-sizing: border-box;
 }
 
+/* ── Base ─────────────────────────────────────────────────── */
 body {
     background: var(--bg);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(99,102,241,.25) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 110%, rgba(16,185,129,.15) 0%, transparent 60%);
     color: var(--text);
     font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+}
 
+/* ── Navigation ───────────────────────────────────────────── */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: rgba(8, 13, 26, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+}
+
+.nav-icon { font-size: 1.5rem; }
+
+.nav-links { display: flex; gap: 8px; }
+
+.nav-link {
+    text-decoration: none;
+    color: var(--muted);
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--text);
+    background: rgba(99, 102, 241, 0.18);
+}
+
+/* ── Page Wrapper ─────────────────────────────────────────── */
+.page-wrapper {
     display: flex;
     justify-content: center;
-    align-items: flex-start;   /* FIXED */
-
-    min-height: 100vh;
-    padding: 40px 20px;
+    padding: 40px 20px 60px;
 }
 
+/* ── Form Container ───────────────────────────────────────── */
 .container {
     background: var(--card);
-    padding: 40px;
-    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 44px 48px;
+    border-radius: 24px;
     width: 100%;
-    max-width: 700px;
-    backdrop-filter: blur(20px);
-    margin-top: 20px;
+    max-width: 780px;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
 }
 
-h2 {
+/* ── Form Header ─────────────────────────────────────────── */
+.form-header {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 36px;
+}
+
+.form-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #a5b4fc, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* ── Form Rows ───────────────────────────────────────────── */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
+/* ── Labels ──────────────────────────────────────────────── */
 label {
-    display: block;
-    margin-bottom: 5px;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+/* ── Inputs & Selects ────────────────────────────────────── */
 input, select {
     width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    background: #1e293b;
-    color: white;
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    background: var(--primary);
-    border: none;
+    padding: 12px 14px;
     border-radius: 10px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 20px;
+    border: 1px solid var(--border);
+    background: rgba(15, 23, 42, 0.8);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.97rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
 }
 
-button:hover {
-    background: #4f46e5;
+input::placeholder { color: rgba(148,163,184,0.5); }
+
+input:focus, select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+}
+
+select option { background: #0f172a; }
+
+/* ── Submit Button ───────────────────────────────────────── */
+button[type="submit"] {
+    width: 100%;
+    padding: 14px;
+    margin-top: 24px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
+    box-shadow: 0 8px 30px rgba(99,102,241,0.35);
+}
+
+button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(99,102,241,0.5);
+}
+
+button[type="submit"]:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 620px) {
+    .container { padding: 28px 22px; }
+    .form-row  { grid-template-columns: 1fr; }
+    .navbar    { padding: 14px 20px; }
+    .form-header h1 { font-size: 1.5rem; }
 }

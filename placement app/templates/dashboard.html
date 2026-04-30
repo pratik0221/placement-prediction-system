@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Placement Prediction Analytics Dashboard – degree & class-wise stats, charts, and recent student records.">
+    <title>Analytics Dashboard | PlacementAI</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* ── Filter Bar ──────────────────────────────────────────── */
+        .filter-bar {
+            display: flex;
+            align-items: flex-end;
+            gap: 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            flex: 1;
+            min-width: 180px;
+            max-width: 260px;
+        }
+        .filter-label {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+        .filter-select {
+            background: rgba(99,102,241,0.12);
+            border: 1.5px solid rgba(99,102,241,0.35);
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            outline: none;
+            transition: border-color .2s, background .2s;
+            width: 100%;
+        }
+        .filter-select:focus  { border-color: #6366f1; background: rgba(99,102,241,0.2); }
+        .filter-select:disabled { opacity: 0.45; cursor: not-allowed; }
+        .filter-select option { background: #1e293b; color: #e2e8f0; }
+
+        .filter-btn {
+            padding: 0.65rem 1.6rem;
+            border-radius: 10px;
+            background: linear-gradient(135deg,#6366f1,#8b5cf6);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: opacity .2s, transform .15s;
+            white-space: nowrap;
+            align-self: flex-end;
+        }
+        .filter-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+        .filter-btn:active { transform: translateY(0); }
+        .filter-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        .filter-pills {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .filter-pill {
+            background: linear-gradient(135deg,#6366f1,#8b5cf6);
+            color: #fff;
+            padding: 0.32rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        /* Step arrows between selects */
+        .step-arrow {
+            font-size: 1.3rem;
+            color: #475569;
+            align-self: flex-end;
+            padding-bottom: 0.55rem;
+        }
+
+        /* ── Blank State ─────────────────────────────────────────── */
+        .blank-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 5rem 2rem;
+            color: #64748b;
+            text-align: center;
+        }
+        .blank-state .blank-icon { font-size: 4rem; }
+        .blank-state h2  { font-size: 1.4rem; font-weight: 700; color: #94a3b8; }
+        .blank-state p   { font-size: 0.95rem; max-width: 400px; }
+        .blank-steps {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .blank-step {
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.25);
+            border-radius: 12px;
+            padding: 0.8rem 1.4rem;
+            font-size: 0.88rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .blank-step-num {
+            background: linear-gradient(135deg,#6366f1,#8b5cf6);
+            color: #fff;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 800;
+        }
+
+        /* ── Section header row (title + action button) ──────── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .section-header .section-title { margin-bottom: 0; }
+
+        /* ── Download CSV Button ─────────────────────────────── */
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 1.25rem;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: opacity .2s, transform .15s, box-shadow .2s;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+            white-space: nowrap;
+        }
+        .btn-download:hover  { opacity: 0.88; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,0.45); }
+        .btn-download:active { transform: translateY(0); }
+        .btn-download svg    { width: 16px; height: 16px; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+<!-- ── Navigation ────────────────────────────────────────────── -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="nav-icon">🎓</span>
+        <span>PlacementAI</span>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link" id="nav-home">🏠 Home</a>
+        <a href="/dashboard" class="nav-link active" id="nav-dashboard">📊 Dashboard</a>
+    </div>
+</nav>
+
+<!-- ── Page ──────────────────────────────────────────────────── -->
+<main class="dash-wrapper">
+
+    <div class="dash-header">
+        <h1>Analytics Dashboard</h1>
+        <p class="dash-subtitle">Select a degree, then a class to explore placement insights</p>
+    </div>
+
+    <!-- ── Cascading Filter Bar ───────────────────────────────── -->
+    <div class="filter-bar">
+
+        <!-- Step 1: Degree -->
+        <div class="filter-group">
+            <span class="filter-label">① Degree</span>
+            <select class="filter-select" id="degreeSelect" onchange="onDegreeChange()">
+                <option value="">-- Select Degree --</option>
+                {% for deg in all_degrees %}
+                <option value="{{ deg }}" {% if deg == selected_degree %}selected{% endif %}>{{ deg }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="step-arrow">›</div>
+
+        <!-- Step 2: Class (enabled only after degree chosen) -->
+        <div class="filter-group">
+            <span class="filter-label">② Class / Year</span>
+            <select class="filter-select" id="classSelect"
+                    {% if not selected_degree %}disabled{% endif %}>
+                <option value="">-- Select Class --</option>
+                {% for cls in all_classes %}
+                <option value="{{ cls }}" {% if cls == selected_class %}selected{% endif %}>{{ cls }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="step-arrow">›</div>
+
+        <!-- Step 3: Visualize button -->
+        <button class="filter-btn" id="visualizeBtn"
+                onclick="applyFilter()"
+                {% if not selected_degree or not selected_class %}disabled{% endif %}>
+            📊 Visualize
+        </button>
+
+        <!-- Active filter pills -->
+        {% if selected_degree and selected_class %}
+        <div class="filter-pills">
+            <span class="filter-pill">🎓 {{ selected_degree }}</span>
+            <span class="filter-pill">📚 {{ selected_class }}</span>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ── Content ────────────────────────────────────────────── -->
+    {% if not selected_degree or not selected_class %}
+
+    <!-- Blank / Guide State -->
+    <div class="blank-state" id="blankState">
+        <div class="blank-icon">📊</div>
+        <h2>No Filter Selected Yet</h2>
+        <p>Follow the steps below to explore placement analytics for any degree and class.</p>
+        <div class="blank-steps">
+            <div class="blank-step"><div class="blank-step-num">1</div> Choose a <strong>Degree</strong> (B.Tech, BCA…)</div>
+            <div class="blank-step"><div class="blank-step-num">2</div> Choose a <strong>Class</strong> (FY, SY, TY…)</div>
+            <div class="blank-step"><div class="blank-step-num">3</div> Click <strong>Visualize</strong></div>
+        </div>
+    </div>
+
+    {% else %}
+
+    <!-- ── Stat Cards ─────────────────────────────────────────── -->
+    <section class="stat-grid" aria-label="Summary Statistics">
+
+        <div class="stat-card card-blue">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+                <span class="stat-label">Unique Students</span>
+                <span class="stat-value">{{ total_students }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card card-purple">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+                <span class="stat-label">Total Predictions</span>
+                <span class="stat-value">{{ total_predictions }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card card-green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+                <span class="stat-label">Placed</span>
+                <span class="stat-value">{{ placed_count }}</span>
+            </div>
+        </div>
+
+        <div class="stat-card card-red">
+            <div class="stat-icon">❌</div>
+            <div class="stat-info">
+                <span class="stat-label">Not Placed</span>
+                <span class="stat-value">{{ not_placed_count }}</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ── Charts ─────────────────────────────────────────────── -->
+    <section class="chart-grid" aria-label="Visual Analytics">
+
+        <div class="chart-card" id="pieCard">
+            <h2 class="chart-title">Placement Distribution — {{ selected_degree }} / {{ selected_class }}</h2>
+            <div class="chart-canvas-wrap">
+                <canvas id="pieChart" aria-label="Pie chart: Placed vs Not Placed"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card" id="barCard">
+            <h2 class="chart-title">Result Breakdown — {{ selected_degree }} / {{ selected_class }}</h2>
+            <div class="chart-canvas-wrap">
+                <canvas id="barChart" aria-label="Bar chart: placed vs not placed count"></canvas>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ── Summary Table ──────────────────────────────────────── -->
+    <section class="table-section" aria-label="Class-wise Breakdown">
+        <h2 class="section-title">📚 Summary — {{ selected_degree }} · {{ selected_class }}</h2>
+        <div class="table-wrapper">
+            <table id="classTable">
+                <thead>
+                    <tr>
+                        <th>Degree</th>
+                        <th>Class</th>
+                        <th>Total</th>
+                        <th>Placed</th>
+                        <th>Not Placed</th>
+                        <th>Placement %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in class_data %}
+                    <tr>
+                        <td><span class="class-badge">{{ row.degree }}</span></td>
+                        <td><span class="class-badge">{{ row.student_class }}</span></td>
+                        <td>{{ row.total }}</td>
+                        <td class="placed-cell">{{ row.placed }}</td>
+                        <td class="not-placed-cell">{{ row.not_placed }}</td>
+                        <td>
+                            {% set pct = (row.placed / row.total * 100) | round(1) %}
+                            <div class="progress-bar-wrap">
+                                <div class="progress-bar" style="width: {{ pct }}%"></div>
+                            </div>
+                            <span class="pct-label">{{ pct }}%</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="empty-row">No data for this combination yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ── Recent Records ────────────────────────────────────── -->
+    <section class="table-section" aria-label="Recent Predictions">
+        <div class="section-header">
+            <h2 class="section-title">🕑 All Predictions — {{ selected_degree }} · {{ selected_class }}</h2>
+            <a id="csvDownloadBtn"
+               href="/dashboard/export?degree={{ selected_degree | urlencode }}&class={{ selected_class | urlencode }}"
+               class="btn-download"
+               title="Download all records for {{ selected_degree }} – {{ selected_class }} as CSV">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download CSV
+            </a>
+        </div>
+        <div class="table-wrapper">
+            <table id="recentTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>Degree</th>
+                        <th>Class</th>
+                        <th>CGPA</th>
+                        <th>Result</th>
+                        <th>Probability</th>
+                        <th>Date &amp; Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in recent %}
+                    <tr>
+                        <td>{{ row.id }}</td>
+                        <td class="student-name">{{ row.student_name }}</td>
+                        <td><span class="class-badge">{{ row.degree }}</span></td>
+                        <td><span class="class-badge">{{ row.student_class }}</span></td>
+                        <td>{{ row.cgpa }}</td>
+                        <td>
+                            <span class="result-badge {{ 'badge-placed' if row.prediction_result == 'Placed' else 'badge-not-placed' }}">
+                                {{ row.prediction_result }}
+                            </span>
+                        </td>
+                        <td>{{ row.probability }}%</td>
+                        <td class="timestamp">{{ row.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="empty-row">No predictions recorded for this combination yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ── Chart.js Scripts ───────────────────────────────────── -->
+    <script>
+        const placedCount    = {{ placed_count }};
+        const notPlacedCount = {{ not_placed_count }};
+
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Outfit', sans-serif";
+
+        // Doughnut Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Placed', 'Not Placed'],
+                datasets: [{
+                    data: [placedCount, notPlacedCount],
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderColor: ['#059669', '#dc2626'],
+                    borderWidth: 2,
+                    hoverOffset: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 20, font: { size: 13 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct   = total > 0 ? ((ctx.raw / total) * 100).toFixed(1) : 0;
+                                return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Bar Chart
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Placed', 'Not Placed'],
+                datasets: [{
+                    label: 'Students',
+                    data: [placedCount, notPlacedCount],
+                    backgroundColor: ['rgba(16,185,129,0.75)', 'rgba(239,68,68,0.75)'],
+                    borderColor: ['#10b981', '#ef4444'],
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.raw} student${ctx.raw !== 1 ? 's' : ''}`
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(148,163,184,0.1)' }, ticks: { font: { size: 13 } } },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(148,163,184,0.1)' },
+                        ticks: { stepSize: 1, font: { size: 13 } }
+                    }
+                }
+            }
+        });
+    </script>
+
+    {% endif %}
+
+</main>
+
+<script>
+    /* ── Degree change: fetch classes for that degree, populate dropdown ── */
+    function onDegreeChange() {
+        const degree   = document.getElementById('degreeSelect').value;
+        const classEl  = document.getElementById('classSelect');
+        const visualizeBtn = document.getElementById('visualizeBtn');
+
+        // Reset class dropdown
+        classEl.innerHTML = '<option value="">-- Select Class --</option>';
+        classEl.disabled  = true;
+        visualizeBtn.disabled = true;
+
+        if (!degree) return;
+
+        // Fetch classes available for this degree via the same dashboard endpoint
+        fetch(`/dashboard/classes?degree=${encodeURIComponent(degree)}`)
+            .then(r => r.json())
+            .then(data => {
+                data.classes.forEach(cls => {
+                    const opt = document.createElement('option');
+                    opt.value       = cls;
+                    opt.textContent = cls;
+                    classEl.appendChild(opt);
+                });
+                classEl.disabled = false;
+            })
+            .catch(() => {
+                // fallback: enable dropdown anyway so user can type
+                classEl.disabled = false;
+            });
+    }
+
+    /* Enable Visualize button when class is chosen */
+    document.getElementById('classSelect').addEventListener('change', function () {
+        document.getElementById('visualizeBtn').disabled = !this.value;
+    });
+
+    /* Navigate with both params */
+    function applyFilter() {
+        const degree = document.getElementById('degreeSelect').value;
+        const cls    = document.getElementById('classSelect').value;
+        if (degree && cls) {
+            window.location.href = `/dashboard?degree=${encodeURIComponent(degree)}&class=${encodeURIComponent(cls)}`;
+        }
+    }
+</script>
+
+</body>
+</html>
