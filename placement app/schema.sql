@@ -41,3 +41,11 @@ CREATE TABLE IF NOT EXISTS predictions (
     INDEX idx_result (prediction_result),
     INDEX idx_time   (created_at)
 );
+
+-- ── Admin accounts table ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS admins (
+    id           INT          AUTO_INCREMENT PRIMARY KEY,
+    username     VARCHAR(60)  NOT NULL UNIQUE,
+    password_hash VARCHAR(256) NOT NULL,
+    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

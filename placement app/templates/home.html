@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Home | PlacementAI{% endblock %}
+{% block page_subtitle %}Overall Placement Overview{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rate-value { color: var(--purple) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-heading">📊 Placement Overview</div>
+<p class="page-desc">Overall summary of all student predictions across all degrees and classes.</p>
+
+<!-- Overall stat cards -->
+<section class="stat-grid" aria-label="Overall Statistics">
+
+    <div class="stat-card card-blue">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+            <span class="stat-label">Unique Students</span>
+            <span class="stat-value">{{ overall.total_students or 0 }}</span>
+        </div>
+    </div>
+
+    <div class="stat-card card-green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+            <span class="stat-label">Total Placed</span>
+            <span class="stat-value">{{ overall.placed or 0 }}</span>
+        </div>
+    </div>
+
+    <div class="stat-card card-red">
+        <div class="stat-icon">❌</div>
+        <div class="stat-info">
+            <span class="stat-label">Not Placed</span>
+            <span class="stat-value">{{ overall.not_placed or 0 }}</span>
+        </div>
+    </div>
+
+    <div class="stat-card card-purple">
+        <div class="stat-icon">📈</div>
+        <div class="stat-info">
+            <span class="stat-label">Placement Rate</span>
+            <span class="stat-value rate-value">
+                {% if overall.total_predictions and overall.total_predictions > 0 %}
+                    {{ ((overall.placed / overall.total_predictions) * 100) | round(1) }}%
+                {% else %}0%{% endif %}
+            </span>
+        </div>
+    </div>
+
+</section>
+
+<!-- Degree-wise cards -->
+<div class="section-title">📚 Degree-wise Placement Breakdown</div>
+
+{% if degree_stats %}
+<div class="class-grid" id="degreeGrid">
+    {% for degree, data in degree_stats.items() %}
+    {% set card_id = degree|replace('.', '')|replace(' ', '-') %}
+    {% set overall = data.overall %}
+    {% set pct = ((overall.placed / overall.total) * 100) | round(1) if overall.total > 0 else 0 %}
+    
+    <div class="class-card" id="card-{{ card_id }}">
+        <div class="class-card-header" style="justify-content: space-between; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 1rem;">
+            <span class="badge badge-degree" style="font-size: 1rem; padding: 0.4rem 0.8rem;">{{ degree }}</span>
+            <select class="class-select" onchange="updateCard('{{ degree }}', '{{ card_id }}', this.value)" style="padding: 0.3rem 0.5rem; border-radius: 6px; font-family: 'Outfit', sans-serif; border: 1px solid #c7d2fe; outline: none; background: #f8faff; color: #1e293b; font-weight: 600; cursor: pointer;">
+                <option value="overall">Overall</option>
+                {% for c_name in data.classes.keys() %}
+                <option value="{{ c_name }}">{{ c_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div id="stats-{{ card_id }}">
+            <div class="class-stats">
+                <div class="cs-item">
+                    <span class="cs-label">Students</span>
+                    <span class="cs-value cs-total">{{ overall.students }}</span>
+                </div>
+                <div class="cs-item">
+                    <span class="cs-label">Placed</span>
+                    <span class="cs-value cs-placed">{{ overall.placed }}</span>
+                </div>
+                <div class="cs-item">
+                    <span class="cs-label">Not Placed</span>
+                    <span class="cs-value cs-notplaced">{{ overall.not_placed }}</span>
+                </div>
+            </div>
+            <div class="mini-bar-wrap">
+                <div class="mini-bar" style="width: {{ pct }}%"></div>
+            </div>
+            <div class="pct-text">{{ pct }}% placement rate</div>
+            
+            {% if overall.total > 0 %}
+            <div style="margin-top: 1rem; text-align: center;">
+                <button onclick="viewRecords('{{ degree }}', document.querySelector('#card-{{ card_id }} .class-select').value)" style="padding: 0.4rem 1rem; border-radius: 6px; background: rgba(99,102,241,0.1); color: #4f46e5; border: none; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s;">
+                    View Records →
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Injected data from backend
+    const degreeData = {{ degree_stats | tojson | safe }};
+    
+    function updateCard(degree, cardId, className) {
+        const data = degreeData[degree];
+        let stats;
+        
+        if (className === 'overall') {
+            stats = data.overall;
+        } else {
+            stats = data.classes[className];
+        }
+        
+        let pct = 0;
+        if (stats.total > 0) {
+            pct = ((stats.placed / stats.total) * 100).toFixed(1);
+        }
+        
+        const container = document.getElementById('stats-' + cardId);
+        let recordsBtnHtml = '';
+        
+        if (stats.total > 0) {
+            recordsBtnHtml = `
+            <div style="margin-top: 1rem; text-align: center;">
+                <button onclick="viewRecords('${degree}', '${className}')" style="padding: 0.4rem 1rem; border-radius: 6px; background: rgba(99,102,241,0.1); color: #4f46e5; border: none; font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s;">
+                    View Records →
+                </button>
+            </div>`;
+        }
+        
+        container.innerHTML = `
+            <div class="class-stats">
+                <div class="cs-item">
+                    <span class="cs-label">Students</span>
+                    <span class="cs-value cs-total">${stats.students}</span>
+                </div>
+                <div class="cs-item">
+                    <span class="cs-label">Placed</span>
+                    <span class="cs-value cs-placed">${stats.placed}</span>
+                </div>
+                <div class="cs-item">
+                    <span class="cs-label">Not Placed</span>
+                    <span class="cs-value cs-notplaced">${stats.not_placed}</span>
+                </div>
+            </div>
+            <div class="mini-bar-wrap">
+                <div class="mini-bar" style="width: ${pct}%"></div>
+            </div>
+            <div class="pct-text">${pct}% placement rate</div>
+            ${recordsBtnHtml}
+        `;
+    }
+
+    function viewRecords(degree, className) {
+        if (className === 'overall') {
+            // If they want to see all classes for a degree, the dashboard currently requires a specific class.
+            // For now, let's just go to dashboard with degree selected.
+            window.location.href = '/dashboard?degree=' + encodeURIComponent(degree);
+        } else {
+            window.location.href = '/dashboard?degree=' + encodeURIComponent(degree) + '&class=' + encodeURIComponent(className);
+        }
+    }
+</script>
+
+{% else %}
+<div class="empty-state">
+    <div class="es-icon">📂</div>
+    <h3>No Data Yet</h3>
+    <p>Go to <a href="/prediction" style="color:#4f46e5;font-weight:700;">⚡ Prediction</a> to add student records.</p>
+</div>
+{% endif %}
+{% endblock %}

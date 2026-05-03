@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PlacementAI{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Sidebar ──────────────────────────────────────────── -->
+<aside class="sidebar">
+
+    <!-- Admin chip -->
+    <div class="sidebar-admin">
+        <div class="admin-avatar">👤</div>
+        <div class="admin-info">
+            <span class="admin-role">Admin</span>
+            <span class="admin-name">{{ session.get('admin_user', 'Admin') }}</span>
+        </div>
+    </div>
+
+    <!-- Nav links -->
+    <nav class="sidebar-nav">
+        <a href="/home"       class="nav-item {% if active_page == 'home' %}active{% endif %}">
+            <span class="ni">🏠</span> Home
+        </a>
+        <a href="/prediction" class="nav-item {% if active_page == 'prediction' %}active{% endif %}">
+            <span class="ni">⚡</span> Prediction
+        </a>
+        <a href="/dashboard"  class="nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+            <span class="ni">📊</span> Dashboard
+        </a>
+        <a href="/admin/create" class="nav-item {% if active_page == 'create_admin' %}active{% endif %}">
+            <span class="ni">➕</span> New Admin
+        </a>
+    </nav>
+
+    <!-- Logout at bottom -->
+    <div class="sidebar-bottom">
+        <a href="/admin/logout" class="nav-item logout">
+            <span class="ni">🚪</span> Logout
+        </a>
+    </div>
+
+</aside>
+
+<!-- ── Main content ─────────────────────────────────────── -->
+<div class="main-content">
+
+    <!-- Centered header -->
+    <header class="main-header">
+        <div class="app-title">🎓 PlacementAI</div>
+        <div class="app-subtitle">{% block page_subtitle %}Placement Prediction Analytics System{% endblock %}</div>
+    </header>
+
+    <!-- Page body -->
+    <div class="page-body">
+        {% block content %}{% endblock %}
+    </div>
+
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

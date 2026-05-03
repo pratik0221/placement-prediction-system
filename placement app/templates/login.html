@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin login – PlacementAI Analytics Dashboard">
+    <title>Admin Login | PlacementAI</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --bg: #f0f4ff;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --muted: #64748b;
+            --red: #dc2626;
+            --green: #059669;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse 80% 60% at 15% -10%, rgba(99, 102, 241, .12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 110%, rgba(79, 70, 229, .08) 0%, transparent 60%);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* ── Brand header above card ── */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+        }
+
+        /* ── Login Card ── */
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 44px 48px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 8px 40px rgba(99, 102, 241, 0.12);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .lock-icon {
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .card-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .card-header p {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        /* ── Error Alert ── */
+        .alert-error {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(220, 38, 38, 0.08);
+            border: 1px solid rgba(220, 38, 38, 0.25);
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            color: var(--red);
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: shake 0.3s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-4px);
+            }
+
+            75% {
+                transform: translateX(4px);
+            }
+        }
+
+        /* ── Form Fields ── */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: #f8faff;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.97rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary-light);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+
+        /* ── Toggle password visibility ── */
+        .toggle-pw {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 1rem;
+            padding: 0;
+            line-height: 1;
+        }
+
+        /* ── Submit Button ── */
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            margin-top: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+            box-shadow: 0 6px 24px rgba(79, 70, 229, 0.30);
+            letter-spacing: 0.2px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(79, 70, 229, 0.40);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Footer note ── */
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 500px) {
+            .login-card {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Brand -->
+    <div class="brand">
+        <span class="brand-icon">🎓</span>
+        PlacementAI
+    </div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+
+        <div class="card-header">
+            <span class="lock-icon">🔐</span>
+            <h1>Admin Login</h1>
+            <p>Sign in to access the analytics dashboard</p>
+        </div>
+
+        <!-- Error message -->
+        {% if error %}
+        <div class="alert-error" id="loginError" role="alert">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/admin/login" id="loginForm">
+
+            <!-- Username -->
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="username" name="username" placeholder="Enter admin username"
+                        autocomplete="username" required>
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔑</span>
+                    <input type="password" id="password" name="password" placeholder="Enter password"
+                        autocomplete="current-password" required>
+                    <button type="button" class="toggle-pw" id="togglePw" onclick="togglePassword()"
+                        title="Show/hide password">👁</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                🔓 Sign In
+            </button>
+
+        </form>
+
+        <div class="login-footer">
+            Not an admin? <a href="/">← Back to Predictor</a>
+        </div>
+
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pw = document.getElementById('password');
+            const btn = document.getElementById('togglePw');
+            if (pw.type === 'password') {
+                pw.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                pw.type = 'password';
+                btn.textContent = '👁';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function () {
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Signing in…';
+        });
+    </script>
+
+</body>
+
+</html>

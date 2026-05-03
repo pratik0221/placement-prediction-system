@@ -1,24 +1,28 @@
 /* ============================================================
-   style.css  –  Prediction Form Page
+   style.css  –  Prediction Form Page  (Light Mode)
    ============================================================ */
 
 /* ── Design Tokens ────────────────────────────────────────── */
 :root {
-    --primary:       #6366f1;
-    --primary-dark:  #4f46e5;
-    --bg:            #080d1a;
-    --surface:       rgba(15, 23, 42, 0.85);
-    --card:          rgba(30, 41, 59, 0.75);
-    --border:        rgba(148, 163, 184, 0.12);
-    --text:          #f1f5f9;
-    --muted:         #94a3b8;
-    --green:         #10b981;
-    --red:           #ef4444;
+    --primary: #4f46e5;
+    --primary-light: #6366f1;
+    --bg: #f0f4ff;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: rgba(99, 102, 241, 0.15);
+    --border-soft: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+    --green: #059669;
+    --red: #dc2626;
 }
 
 /* ── Reset ────────────────────────────────────────────────── */
-*, *::before, *::after {
-    margin: 0; padding: 0;
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
@@ -26,8 +30,8 @@
 body {
     background: var(--bg);
     background-image:
-        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(99,102,241,.25) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 110%, rgba(16,185,129,.15) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 60% at 10% -10%, rgba(99, 102, 241, .10) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 110%, rgba(16, 185, 129, .08) 0%, transparent 60%);
     color: var(--text);
     font-family: 'Outfit', sans-serif;
     min-height: 100vh;
@@ -39,12 +43,13 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 16px 40px;
-    background: rgba(8, 13, 26, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-soft);
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 1px 12px rgba(99, 102, 241, 0.08);
 }
 
 .nav-brand {
@@ -53,13 +58,18 @@ body {
     gap: 10px;
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--text);
+    color: var(--primary);
     letter-spacing: -0.3px;
 }
 
-.nav-icon { font-size: 1.5rem; }
+.nav-icon {
+    font-size: 1.5rem;
+}
 
-.nav-links { display: flex; gap: 8px; }
+.nav-links {
+    display: flex;
+    gap: 8px;
+}
 
 .nav-link {
     text-decoration: none;
@@ -73,8 +83,8 @@ body {
 
 .nav-link:hover,
 .nav-link.active {
-    color: var(--text);
-    background: rgba(99, 102, 241, 0.18);
+    color: var(--primary);
+    background: rgba(99, 102, 241, 0.10);
 }
 
 /* ── Page Wrapper ─────────────────────────────────────────── */
@@ -87,13 +97,12 @@ body {
 /* ── Form Container ───────────────────────────────────────── */
 .container {
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-soft);
     padding: 44px 48px;
     border-radius: 24px;
     width: 100%;
     max-width: 780px;
-    backdrop-filter: blur(24px);
-    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+    box-shadow: 0 8px 40px rgba(99, 102, 241, 0.10);
 }
 
 /* ── Form Header ─────────────────────────────────────────── */
@@ -105,7 +114,7 @@ body {
 .form-header h1 {
     font-size: 2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #a5b4fc, #6366f1);
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -134,20 +143,21 @@ body {
 
 /* ── Labels ──────────────────────────────────────────────── */
 label {
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.82rem;
+    font-weight: 700;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 /* ── Inputs & Selects ────────────────────────────────────── */
-input, select {
+input,
+select {
     width: 100%;
     padding: 12px 14px;
     border-radius: 10px;
-    border: 1px solid var(--border);
-    background: rgba(15, 23, 42, 0.8);
+    border: 1.5px solid var(--border-soft);
+    background: #f8faff;
     color: var(--text);
     font-family: 'Outfit', sans-serif;
     font-size: 0.97rem;
@@ -155,21 +165,28 @@ input, select {
     outline: none;
 }
 
-input::placeholder { color: rgba(148,163,184,0.5); }
-
-input:focus, select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+input::placeholder {
+    color: #a0aec0;
 }
 
-select option { background: #0f172a; }
+input:focus,
+select:focus {
+    border-color: var(--primary-light);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+select option {
+    background: #ffffff;
+    color: var(--text);
+}
 
 /* ── Submit Button ───────────────────────────────────────── */
 button[type="submit"] {
     width: 100%;
     padding: 14px;
     margin-top: 24px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
     border: none;
     border-radius: 12px;
     color: white;
@@ -179,12 +196,12 @@ button[type="submit"] {
     letter-spacing: 0.3px;
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
-    box-shadow: 0 8px 30px rgba(99,102,241,0.35);
+    box-shadow: 0 6px 24px rgba(79, 70, 229, 0.30);
 }
 
 button[type="submit"]:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 40px rgba(99,102,241,0.5);
+    box-shadow: 0 12px 36px rgba(79, 70, 229, 0.40);
 }
 
 button[type="submit"]:disabled {
@@ -195,8 +212,19 @@ button[type="submit"]:disabled {
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 620px) {
-    .container { padding: 28px 22px; }
-    .form-row  { grid-template-columns: 1fr; }
-    .navbar    { padding: 14px 20px; }
-    .form-header h1 { font-size: 1.5rem; }
+    .container {
+        padding: 28px 22px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar {
+        padding: 14px 20px;
+    }
+
+    .form-header h1 {
+        font-size: 1.5rem;
+    }
 }
