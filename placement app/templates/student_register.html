@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Registration - PlacementAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 2rem 0; }
+        .login-card { background: #1e293b; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 600px; }
+        h2 { text-align: center; color: #38bdf8; margin-bottom: 1.5rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group.full { grid-column: 1 / -1; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background: #38bdf8; color: #0f172a; font-weight: 600; cursor: pointer; margin-top: 1rem; grid-column: 1 / -1; }
+        button:hover { background: #0ea5e9; }
+        .error { color: #f87171; text-align: center; margin-bottom: 1rem; font-size: 0.9rem; grid-column: 1 / -1;}
+        .link { text-align: center; margin-top: 1rem; font-size: 0.9rem; grid-column: 1 / -1; }
+        .link a { color: #38bdf8; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Student Registration</h2>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        <form method="POST" class="grid">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select name="gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Degree</label>
+                <select name="degree">
+                    <option value="B.Tech">B.Tech</option>
+                    <option value="BCA">BCA</option>
+                    <option value="MCA">MCA</option>
+                    <option value="B.Sc">B.Sc</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Class/Year</label>
+                <input type="text" name="student_class" placeholder="e.g. TY, Final Year" required>
+            </div>
+            <div class="form-group">
+                <label>CGPA (0-10)</label>
+                <input type="number" step="0.01" name="cgpa" required>
+            </div>
+            <div class="form-group">
+                <label>Internships (Count)</label>
+                <input type="number" name="internships" value="0" required>
+            </div>
+            <div class="form-group">
+                <label>Projects (Count)</label>
+                <input type="number" name="projects" value="0" required>
+            </div>
+            <div class="form-group">
+                <label>Backlogs (Count)</label>
+                <input type="number" name="backlogs" value="0" required>
+            </div>
+            
+            <button type="submit">Register</button>
+        </form>
+        <div class="link">
+            Already have an account? <a href="{{ url_for('student_login') }}">Login here</a>
+        </div>
+    </div>
+</body>
+</html>

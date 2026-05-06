@@ -7,70 +7,208 @@
 <style>
     /* Filter bar */
     .filter-bar {
-        display: flex; align-items: flex-end; gap: 1.2rem;
-        background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
-        padding: 1.2rem 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;
-        box-shadow: 0 2px 10px rgba(99,102,241,0.06);
+        display: flex;
+        align-items: flex-end;
+        gap: 1.2rem;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        box-shadow: 0 2px 10px rgba(99, 102, 241, 0.06);
     }
-    .filter-group { display: flex; flex-direction: column; gap: .4rem; flex: 1; min-width: 170px; max-width: 250px; }
-    .filter-label { font-size: .8rem; color: #64748b; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+        flex: 1;
+        min-width: 170px;
+        max-width: 250px;
+    }
+
+    .filter-label {
+        font-size: .8rem;
+        color: #64748b;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+    }
+
     .filter-select {
-        background: #f8faff; border: 1.5px solid #c7d2fe; border-radius: 10px;
-        color: #1e293b; font-family: 'Outfit', sans-serif; font-size: .95rem; font-weight: 600;
-        padding: .6rem 1rem; cursor: pointer; outline: none; width: 100%;
+        background: #f8faff;
+        border: 1.5px solid #c7d2fe;
+        border-radius: 10px;
+        color: #1e293b;
+        font-family: 'Outfit', sans-serif;
+        font-size: .95rem;
+        font-weight: 600;
+        padding: .6rem 1rem;
+        cursor: pointer;
+        outline: none;
+        width: 100%;
         transition: border-color .2s, box-shadow .2s;
     }
-    .filter-select:focus { border-color: #6366f1; background: #fff; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
-    .filter-select:disabled { opacity: .45; cursor: not-allowed; }
-    .filter-select option { background: #fff; color: #1e293b; }
-    .step-arrow { font-size: 1.3rem; color: #94a3b8; align-self: flex-end; padding-bottom: .55rem; }
+
+    .filter-select:focus {
+        border-color: #6366f1;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .filter-select:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    .filter-select option {
+        background: #fff;
+        color: #1e293b;
+    }
+
+    .step-arrow {
+        font-size: 1.3rem;
+        color: #94a3b8;
+        align-self: flex-end;
+        padding-bottom: .55rem;
+    }
+
     .filter-btn {
-        padding: .65rem 1.5rem; border-radius: 10px;
-        background: linear-gradient(135deg,#4f46e5,#6366f1); color: #fff;
-        font-family: 'Outfit', sans-serif; font-size: .95rem; font-weight: 700;
-        border: none; cursor: pointer; align-self: flex-end;
-        box-shadow: 0 4px 14px rgba(79,70,229,0.26);
+        padding: .65rem 1.5rem;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        font-family: 'Outfit', sans-serif;
+        font-size: .95rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        align-self: flex-end;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.26);
         transition: opacity .2s, transform .15s;
     }
-    .filter-btn:hover { opacity: .88; transform: translateY(-1px); }
-    .filter-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
-    .filter-pills { display: flex; gap: .5rem; align-items: flex-end; flex-wrap: wrap; }
+
+    .filter-btn:hover {
+        opacity: .88;
+        transform: translateY(-1px);
+    }
+
+    .filter-btn:disabled {
+        opacity: .4;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .filter-pills {
+        display: flex;
+        gap: .5rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
     .filter-pill {
-        background: linear-gradient(135deg,#4f46e5,#6366f1); color: #fff;
-        padding: .3rem .9rem; border-radius: 20px; font-size: .78rem; font-weight: 700;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        padding: .3rem .9rem;
+        border-radius: 20px;
+        font-size: .78rem;
+        font-weight: 700;
     }
 
     /* Blank state */
     .blank-state {
-        text-align: center; padding: 5rem 2rem; color: #64748b;
+        text-align: center;
+        padding: 5rem 2rem;
+        color: #64748b;
     }
-    .blank-icon { font-size: 3.5rem; margin-bottom: 12px; }
-    .blank-state h2 { font-size: 1.3rem; font-weight: 700; color: #475569; margin-bottom: 6px; }
-    .blank-steps { display: flex; gap: 1.2rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
+
+    .blank-icon {
+        font-size: 3.5rem;
+        margin-bottom: 12px;
+    }
+
+    .blank-state h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 6px;
+    }
+
+    .blank-steps {
+        display: flex;
+        gap: 1.2rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
     .blank-step {
-        background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.18);
-        border-radius: 12px; padding: .7rem 1.2rem; font-size: .87rem; color: #475569;
-        display: flex; align-items: center; gap: .5rem;
+        background: rgba(99, 102, 241, 0.07);
+        border: 1px solid rgba(99, 102, 241, 0.18);
+        border-radius: 12px;
+        padding: .7rem 1.2rem;
+        font-size: .87rem;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
     }
+
     .blank-step-num {
-        background: linear-gradient(135deg,#4f46e5,#6366f1); color: #fff;
-        width: 22px; height: 22px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: .72rem; font-weight: 800; flex-shrink: 0;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .72rem;
+        font-weight: 800;
+        flex-shrink: 0;
     }
 
     /* Section header with CSV button */
-    .section-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; margin-bottom: 1rem; }
-    .section-header .section-title { margin-bottom: 0; }
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .8rem;
+        margin-bottom: 1rem;
+    }
+
+    .section-header .section-title {
+        margin-bottom: 0;
+    }
+
     .btn-download {
-        display: inline-flex; align-items: center; gap: .45rem; padding: .5rem 1.2rem;
-        border-radius: 10px; background: linear-gradient(135deg,#059669,#10b981);
-        color: #fff; font-family: 'Outfit', sans-serif; font-size: .87rem; font-weight: 700;
-        text-decoration: none; box-shadow: 0 4px 12px rgba(5,150,105,0.22);
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .5rem 1.2rem;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #fff;
+        font-family: 'Outfit', sans-serif;
+        font-size: .87rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.22);
         transition: opacity .2s, transform .15s;
     }
-    .btn-download:hover { opacity: .88; transform: translateY(-2px); }
-    .btn-download svg { width: 15px; height: 15px; }
+
+    .btn-download:hover {
+        opacity: .88;
+        transform: translateY(-2px);
+    }
+
+    .btn-download svg {
+        width: 15px;
+        height: 15px;
+    }
 </style>
 {% endblock %}
 
@@ -83,7 +221,7 @@
         <select class="filter-select" id="degreeSelect" onchange="onDegreeChange()">
             <option value="">-- Select Degree --</option>
             {% for deg in all_degrees %}
-            <option value="{{ deg }}" {% if deg == selected_degree %}selected{% endif %}>{{ deg }}</option>
+            <option value="{{ deg }}" {% if deg==selected_degree %}selected{% endif %}>{{ deg }}</option>
             {% endfor %}
         </select>
     </div>
@@ -93,13 +231,13 @@
         <select class="filter-select" id="classSelect" {% if not selected_degree %}disabled{% endif %}>
             <option value="">-- Select Class --</option>
             {% for cls in all_classes %}
-            <option value="{{ cls }}" {% if cls == selected_class %}selected{% endif %}>{{ cls }}</option>
+            <option value="{{ cls }}" {% if cls==selected_class %}selected{% endif %}>{{ cls }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="step-arrow">›</div>
-    <button class="filter-btn" id="visualizeBtn" onclick="applyFilter()"
-            {% if not selected_degree or not selected_class %}disabled{% endif %}>
+    <button class="filter-btn" id="visualizeBtn" onclick="applyFilter()" {% if not selected_degree or not selected_class
+        %}disabled{% endif %}>
         📊 Visualize
     </button>
     {% if selected_degree and selected_class %}
@@ -118,9 +256,15 @@
     <h2>No Filter Selected Yet</h2>
     <p>Select a degree and class to explore placement analytics.</p>
     <div class="blank-steps">
-        <div class="blank-step"><div class="blank-step-num">1</div> Choose a <strong>Degree</strong></div>
-        <div class="blank-step"><div class="blank-step-num">2</div> Choose a <strong>Class</strong></div>
-        <div class="blank-step"><div class="blank-step-num">3</div> Click <strong>Visualize</strong></div>
+        <div class="blank-step">
+            <div class="blank-step-num">1</div> Choose a <strong>Degree</strong>
+        </div>
+        <div class="blank-step">
+            <div class="blank-step-num">2</div> Choose a <strong>Class</strong>
+        </div>
+        <div class="blank-step">
+            <div class="blank-step-num">3</div> Click <strong>Visualize</strong>
+        </div>
     </div>
 </div>
 
@@ -130,19 +274,23 @@
 <section class="stat-grid" aria-label="Summary Statistics">
     <div class="stat-card card-blue">
         <div class="stat-icon">👥</div>
-        <div class="stat-info"><span class="stat-label">Unique Students</span><span class="stat-value">{{ total_students }}</span></div>
+        <div class="stat-info"><span class="stat-label">Unique Students</span><span class="stat-value">{{ total_students
+                }}</span></div>
     </div>
     <div class="stat-card card-purple">
         <div class="stat-icon">📋</div>
-        <div class="stat-info"><span class="stat-label">Total Predictions</span><span class="stat-value">{{ total_predictions }}</span></div>
+        <div class="stat-info"><span class="stat-label">Total Predictions</span><span class="stat-value">{{
+                total_predictions }}</span></div>
     </div>
     <div class="stat-card card-green">
         <div class="stat-icon">✅</div>
-        <div class="stat-info"><span class="stat-label">Placed</span><span class="stat-value">{{ placed_count }}</span></div>
+        <div class="stat-info"><span class="stat-label">Ready to Place</span><span class="stat-value">{{ placed_count }}</span>
+        </div>
     </div>
     <div class="stat-card card-red">
         <div class="stat-icon">❌</div>
-        <div class="stat-info"><span class="stat-label">Not Placed</span><span class="stat-value">{{ not_placed_count }}</span></div>
+        <div class="stat-info"><span class="stat-label">Not Ready to Place</span><span class="stat-value">{{ not_placed_count
+                }}</span></div>
     </div>
 </section>
 
@@ -163,7 +311,16 @@
     <h2 class="section-title">📚 Summary — {{ selected_degree }} · {{ selected_class }}</h2>
     <div class="table-wrapper">
         <table id="classTable">
-            <thead><tr><th>Degree</th><th>Class</th><th>Total</th><th>Placed</th><th>Not Placed</th><th>Placement %</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Degree</th>
+                    <th>Class</th>
+                    <th>Total</th>
+                    <th>Ready to Place</th>
+                    <th>Not Ready to Place</th>
+                    <th>Placement %</th>
+                </tr>
+            </thead>
             <tbody>
                 {% for row in class_data %}
                 <tr>
@@ -174,12 +331,16 @@
                     <td class="not-placed-cell">{{ row.not_placed }}</td>
                     <td>
                         {% set pct = (row.placed / row.total * 100) | round(1) %}
-                        <div class="progress-bar-wrap"><div class="progress-bar" style="width:{{ pct }}%"></div></div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar" style="width:{{ pct }}%"></div>
+                        </div>
                         <span class="pct-label">{{ pct }}%</span>
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="6" class="empty-row">No data for this combination yet.</td></tr>
+                <tr>
+                    <td colspan="6" class="empty-row">No data for this combination yet.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -191,35 +352,55 @@
     <div class="section-header">
         <h2 class="section-title">🕑 All Predictions — {{ selected_degree }} · {{ selected_class }}</h2>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <a class="btn-download" style="background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 4px 12px rgba(99,102,241,0.22);"
-               href="/dashboard/export?degree={{ selected_degree | urlencode }}&class={{ selected_class | urlencode }}&filter=all">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            <a class="btn-download"
+                style="background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 4px 12px rgba(99,102,241,0.22);"
+                href="/dashboard/export?degree={{ selected_degree | urlencode }}&class={{ selected_class | urlencode }}&filter=all">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
                 All
             </a>
-            <a class="btn-download" style="background: linear-gradient(135deg,#059669,#10b981); box-shadow: 0 4px 12px rgba(5,150,105,0.22);"
-               href="/dashboard/export?degree={{ selected_degree | urlencode }}&class={{ selected_class | urlencode }}&filter=placed">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            <a class="btn-download"
+                style="background: linear-gradient(135deg,#059669,#10b981); box-shadow: 0 4px 12px rgba(5,150,105,0.22);"
+                href="/dashboard/export?degree={{ selected_degree | urlencode }}&class={{ selected_class | urlencode }}&filter=placed">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Placed
+                Ready to Place
             </a>
-            <a class="btn-download" style="background: linear-gradient(135deg,#dc2626,#ef4444); box-shadow: 0 4px 12px rgba(220,38,38,0.22);"
-               href="/dashboard/export?degree={{ selected_degree | urlencode }}&class={{ selected_class | urlencode }}&filter=not_placed">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            <a class="btn-download"
+                style="background: linear-gradient(135deg,#dc2626,#ef4444); box-shadow: 0 4px 12px rgba(220,38,38,0.22);"
+                href="/dashboard/export?degree={{ selected_degree | urlencode }}&class={{ selected_class | urlencode }}&filter=not_placed">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                Not Placed
+                Not Ready to Place
             </a>
         </div>
     </div>
     <div class="table-wrapper">
         <table id="recentTable">
-            <thead><tr><th>#</th><th>Student</th><th>Degree</th><th>Class</th><th>CGPA</th><th>Result</th><th>Probability</th><th>Date &amp; Time</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Degree</th>
+                    <th>Class</th>
+                    <th>CGPA</th>
+                    <th>Result</th>
+                    <th>Placement Chance</th>
+                    <th>Date &amp; Time</th>
+                </tr>
+            </thead>
             <tbody>
                 {% for row in recent %}
                 <tr>
@@ -228,12 +409,16 @@
                     <td><span class="class-badge">{{ row.degree }}</span></td>
                     <td><span class="class-badge">{{ row.student_class }}</span></td>
                     <td>{{ row.cgpa }}</td>
-                    <td><span class="result-badge {{ 'badge-placed' if row.prediction_result == 'Placed' else 'badge-not-placed' }}">{{ row.prediction_result }}</span></td>
+                    <td><span
+                            class="result-badge {{ 'badge-placed' if row.prediction_result == 'Ready to Place' else 'badge-not-placed' }}">{{
+                            row.prediction_result }}</span></td>
                     <td>{{ row.probability }}%</td>
                     <td class="timestamp">{{ row.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
                 </tr>
                 {% else %}
-                <tr><td colspan="8" class="empty-row">No records yet.</td></tr>
+                <tr>
+                    <td colspan="8" class="empty-row">No records yet.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -247,13 +432,13 @@
 
     new Chart(document.getElementById('pieChart').getContext('2d'), {
         type: 'doughnut',
-        data: { labels: ['Placed','Not Placed'], datasets: [{ data: [placedCount, notPlacedCount], backgroundColor: ['#10b981','#ef4444'], borderColor: ['#059669','#dc2626'], borderWidth: 2, hoverOffset: 12 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 20, font: { size: 13 } } }, tooltip: { callbacks: { label: ctx => { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); return ` ${ctx.label}: ${ctx.raw} (${t>0?((ctx.raw/t)*100).toFixed(1):0}%)`; } } } } }
+        data: { labels: ['Ready to Place', 'Not Ready to Place'], datasets: [{ data: [placedCount, notPlacedCount], backgroundColor: ['#10b981', '#ef4444'], borderColor: ['#059669', '#dc2626'], borderWidth: 2, hoverOffset: 12 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 20, font: { size: 13 } } }, tooltip: { callbacks: { label: ctx => { const t = ctx.dataset.data.reduce((a, b) => a + b, 0); return ` ${ctx.label}: ${ctx.raw} (${t > 0 ? ((ctx.raw / t) * 100).toFixed(1) : 0}%)`; } } } } }
     });
 
     new Chart(document.getElementById('barChart').getContext('2d'), {
         type: 'bar',
-        data: { labels: ['Placed','Not Placed'], datasets: [{ label: 'Students', data: [placedCount, notPlacedCount], backgroundColor: ['rgba(16,185,129,0.75)','rgba(239,68,68,0.75)'], borderColor: ['#10b981','#ef4444'], borderWidth: 2, borderRadius: 10, borderSkipped: false }] },
+        data: { labels: ['Ready to Place', 'Not Ready to Place'], datasets: [{ label: 'Students', data: [placedCount, notPlacedCount], backgroundColor: ['rgba(16,185,129,0.75)', 'rgba(239,68,68,0.75)'], borderColor: ['#10b981', '#ef4444'], borderWidth: 2, borderRadius: 10, borderSkipped: false }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(148,163,184,0.12)' } }, y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { stepSize: 1 } } } }
     });
 </script>
@@ -267,7 +452,7 @@
     function onDegreeChange() {
         const degree = document.getElementById('degreeSelect').value;
         const classEl = document.getElementById('classSelect');
-        const vizBtn  = document.getElementById('visualizeBtn');
+        const vizBtn = document.getElementById('visualizeBtn');
         classEl.innerHTML = '<option value="">-- Select Class --</option>';
         classEl.disabled = true; vizBtn.disabled = true;
         if (!degree) return;

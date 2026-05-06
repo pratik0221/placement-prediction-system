@@ -3,11 +3,11 @@
 --  Run once to create the database and table.
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS placement_db
+CREATE DATABASE IF NOT EXISTS placement_database
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE placement_db;
+USE placement_database;
 
 CREATE TABLE IF NOT EXISTS predictions (
     id                      INT           AUTO_INCREMENT PRIMARY KEY,
@@ -48,4 +48,23 @@ CREATE TABLE IF NOT EXISTS admins (
     username     VARCHAR(60)  NOT NULL UNIQUE,
     password_hash VARCHAR(256) NOT NULL,
     created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── Students table ───────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL,
+    password_hash VARCHAR(256) NOT NULL,
+    degree VARCHAR(20) NOT NULL,
+    student_class VARCHAR(30) NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    cgpa FLOAT DEFAULT 0,
+    internships INT DEFAULT 0,
+    projects INT DEFAULT 0,
+    backlogs INT DEFAULT 0,
+    coding_skills FLOAT DEFAULT NULL,
+    communication_skills FLOAT DEFAULT NULL,
+    aptitude_test_score FLOAT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

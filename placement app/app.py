@@ -27,6 +27,14 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def student_login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('student_logged_in'):
+            return redirect(url_for('student_login'))
+        return f(*args, **kwargs)
+    return decorated
+
 
 # ─── Load Model ────────────────────────────────────────────────────────────────
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "md.pkl")
@@ -39,10 +47,10 @@ DEGREE_MAP = {'B.Tech': 1, 'BCA': 2, 'MCA': 3, 'B.Sc': 0}
 # ─── MySQL Config ──────────────────────────────────────────────────────────────
 DB_CONFIG = {
     'host': 'localhost',
-    'port': 3310,
+    'port': 5500,
     'user': 'root',
     'password': 'root1234',   # change if needed
-    'database': 'placement_db'
+    'database': 'placement_database'
 }
 
 def get_db_connection():
@@ -70,6 +78,49 @@ def init_db():
                 username      VARCHAR(60)  NOT NULL UNIQUE,
                 password_hash VARCHAR(256) NOT NULL,
                 created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        # Create students table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS students (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(120) NOT NULL,
+                email VARCHAR(120) UNIQUE NOT NULL,
+                password_hash VARCHAR(256) NOT NULL,
+                degree VARCHAR(20) NOT NULL,
+                student_class VARCHAR(30) NOT NULL,
+                gender VARCHAR(10) NOT NULL,
+                cgpa FLOAT DEFAULT 0,
+                internships INT DEFAULT 0,
+                projects INT DEFAULT 0,
+                backlogs INT DEFAULT 0,
+                coding_skills FLOAT DEFAULT NULL,
+                communication_skills FLOAT DEFAULT NULL,
+                aptitude_test_score FLOAT DEFAULT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        # Create predictions table if not exists (minimal version for python init)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS predictions (
+                id                      INT           AUTO_INCREMENT PRIMARY KEY,
+                student_name            VARCHAR(120)  NOT NULL,
+                student_class           VARCHAR(30)   NOT NULL,
+                cgpa                    FLOAT         NOT NULL,
+                internships             FLOAT         NOT NULL,
+                projects                FLOAT         NOT NULL,
+                coding_skills           FLOAT         NOT NULL,
+                communication_skills    FLOAT         NOT NULL,
+                aptitude_test_score     FLOAT         NOT NULL,
+                backlogs                FLOAT         NOT NULL,
+                degree                  VARCHAR(20)   NOT NULL,
+                gender                  VARCHAR(10)   NOT NULL,
+                avg_score               FLOAT         NOT NULL,
+                total_skills            FLOAT         NOT NULL,
+                is_weak                 TINYINT(1)    NOT NULL,
+                prediction_result       VARCHAR(20)   NOT NULL,
+                probability             FLOAT         NOT NULL,
+                created_at              DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """)
         # Seed default admin only if table is empty
@@ -117,10 +168,12 @@ def recommend(student):
 
 @app.route('/')
 def index():
-    """Root: redirect to home if logged in, else to login."""
+    """Root: redirect to student portal."""
+    if session.get('student_logged_in'):
+        return redirect(url_for('student_dashboard'))
     if session.get('admin_logged_in'):
         return redirect(url_for('home_stats'))
-    return redirect(url_for('admin_login'))
+    return redirect(url_for('student_login'))
 
 
 @app.route('/home')
@@ -138,8 +191,8 @@ def home_stats():
             SELECT
                 COUNT(DISTINCT student_name)                AS total_students,
                 COUNT(*)                                    AS total_predictions,
-                SUM(prediction_result = 'Placed')           AS placed,
-                SUM(prediction_result = 'Not Placed')       AS not_placed
+                SUM(prediction_result = 'Ready to Place')           AS placed,
+                SUM(prediction_result = 'Not Ready to Place')       AS not_placed
             FROM predictions
         """)
         overall = cursor.fetchone()
@@ -149,8 +202,8 @@ def home_stats():
             SELECT degree, student_class,
                    COUNT(DISTINCT student_name)              AS students,
                    COUNT(*)                                  AS total,
-                   SUM(prediction_result = 'Placed')         AS placed,
-                   SUM(prediction_result = 'Not Placed')     AS not_placed
+                   SUM(prediction_result = 'Ready to Place')         AS placed,
+                   SUM(prediction_result = 'Not Ready to Place')     AS not_placed
             FROM predictions
             GROUP BY degree, student_class
             ORDER BY degree, student_class
@@ -196,8 +249,28 @@ def home_stats():
 @app.route('/prediction')
 @login_required
 def prediction_form():
-    """Prediction form page."""
-    return render_template('prediction.html', active_page='prediction')
+    """Prediction form page & Registered Students List."""
+    conn = get_db_connection()
+    students = []
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM students ORDER BY created_at DESC")
+            students = cursor.fetchall()
+            
+            # For each student, check if prediction exists
+            for s in students:
+                cursor.execute("SELECT prediction_result FROM predictions WHERE student_name = %s AND student_class = %s AND degree = %s LIMIT 1",
+                               (s['name'], s['student_class'], s['degree']))
+                pred = cursor.fetchone()
+                s['has_prediction'] = True if pred else False
+                s['prediction'] = pred['prediction_result'] if pred else None
+                s['tests_complete'] = s['coding_skills'] is not None and s['communication_skills'] is not None and s['aptitude_test_score'] is not None
+        finally:
+            cursor.close()
+            conn.close()
+            
+    return render_template('prediction.html', students=students, active_page='prediction')
 
 
 @app.route('/predict', methods=['POST'])
@@ -235,7 +308,7 @@ def predict():
 
         prediction = model.predict(data)[0]
         prob       = model.predict_proba(data)[0][1]
-        result     = "Placed" if prediction == 1 else "Not Placed"
+        result     = "Ready to Place" if prediction == 1 else "Not Ready to Place"
 
         # ── Recommendations ──────────────────────────────────────────────────
         student_dict = {
@@ -386,7 +459,7 @@ def predict_bulk():
                 
                 prediction = model.predict(data)[0]
                 prob = model.predict_proba(data)[0][1]
-                result = "Placed" if prediction == 1 else "Not Placed"
+                result = "Ready to Place" if prediction == 1 else "Not Ready to Place"
                 
                 cursor.execute(
                     """SELECT id FROM predictions
@@ -447,6 +520,234 @@ def predict_bulk():
     except Exception as e:
         flash(f"Error processing CSV: {str(e)}", "error")
         return redirect(url_for('prediction_form'))
+
+@app.route('/admin/predict_student/<int:student_id>', methods=['POST'])
+@login_required
+def admin_predict_student(student_id):
+    conn = get_db_connection()
+    if not conn:
+        flash("Database error", "error")
+        return redirect(url_for('prediction_form'))
+        
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM students WHERE id = %s", (student_id,))
+        student = cursor.fetchone()
+        
+        if not student:
+            flash("Student not found", "error")
+            return redirect(url_for('prediction_form'))
+            
+        # Check if tests are taken
+        if student['coding_skills'] is None or student['communication_skills'] is None or student['aptitude_test_score'] is None:
+            flash(f"Student {student['name']} has not completed all tests yet.", "error")
+            return redirect(url_for('prediction_form'))
+            
+        cgpa = float(student['cgpa'])
+        internships = float(student['internships'])
+        projects = float(student['projects'])
+        coding = float(student['coding_skills'])
+        comm = float(student['communication_skills'])
+        aptitude = float(student['aptitude_test_score'])
+        backlogs = float(student['backlogs'])
+        gender = GENDER_MAP.get(student['gender'], 1)
+        degree = DEGREE_MAP.get(student['degree'], 1)
+        
+        avg_score = (cgpa + internships + projects) / 3
+        total_skills = aptitude + comm + coding
+        is_weak = 1 if cgpa < 6 else 0
+        
+        data = np.array([[
+            cgpa, internships, projects,
+            coding, comm, aptitude,
+            backlogs, degree, gender,
+            avg_score, total_skills, is_weak
+        ]])
+        
+        prediction_val = model.predict(data)[0]
+        prob = model.predict_proba(data)[0][1]
+        result = "Ready to Place" if prediction_val == 1 else "Not Ready to Place"
+        
+        # Upsert to predictions
+        cursor.execute(
+            "SELECT id FROM predictions WHERE student_name = %s AND student_class = %s AND degree = %s LIMIT 1",
+            (student['name'], student['student_class'], student['degree'])
+        )
+        existing = cursor.fetchone()
+        
+        if existing:
+            cursor.execute(
+                """UPDATE predictions SET
+                       cgpa=%s, internships=%s, projects=%s,
+                       coding_skills=%s, communication_skills=%s,
+                       aptitude_test_score=%s, backlogs=%s, gender=%s,
+                       avg_score=%s, total_skills=%s, is_weak=%s,
+                       prediction_result=%s, probability=%s,
+                       created_at=%s
+                   WHERE id=%s""",
+                (
+                    cgpa, internships, projects,
+                    coding, comm, aptitude, backlogs, student['gender'],
+                    round(avg_score, 4), round(total_skills, 4), is_weak,
+                    result, round(prob * 100, 2), datetime.now(),
+                    existing['id']
+                )
+            )
+        else:
+            cursor.execute(
+                """INSERT INTO predictions
+                       (student_name, student_class, cgpa, internships, projects,
+                        coding_skills, communication_skills, aptitude_test_score,
+                        backlogs, degree, gender, avg_score, total_skills, is_weak,
+                        prediction_result, probability, created_at)
+                   VALUES
+                       (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                (
+                    student['name'], student['student_class'], cgpa, internships, projects,
+                    coding, comm, aptitude, backlogs,
+                    student['degree'], student['gender'],
+                    round(avg_score, 4), round(total_skills, 4), is_weak,
+                    result, round(prob * 100, 2), datetime.now()
+                )
+            )
+            
+        conn.commit()
+        flash(f"Prediction for {student['name']} completed: {result}", "success")
+    except Exception as e:
+        print(f"[PREDICTION ERROR] {e}")
+        flash(f"Error predicting for student: {e}", "error")
+    finally:
+        cursor.close()
+        conn.close()
+        
+    return redirect(url_for('prediction_form'))
+
+
+@app.route('/admin/predict_registered_bulk', methods=['POST'])
+@login_required
+def predict_registered_bulk():
+    degree = request.form.get('degree')
+    student_class = request.form.get('student_class')
+    
+    if not degree or not student_class:
+        flash("Degree and Class are required for bulk prediction.", "error")
+        return redirect(url_for('prediction_form'))
+        
+    conn = get_db_connection()
+    if not conn:
+        flash("Database error", "error")
+        return redirect(url_for('prediction_form'))
+        
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM students WHERE degree = %s AND student_class = %s", (degree, student_class))
+        students = cursor.fetchall()
+        
+        if not students:
+            flash(f"No registered students found for {degree} - {student_class}.", "warning")
+            return redirect(url_for('prediction_form'))
+            
+        success_count = 0
+        skip_count = 0
+        error_count = 0
+        
+        for student in students:
+            # Check if tests are taken
+            if student['coding_skills'] is None or student['communication_skills'] is None or student['aptitude_test_score'] is None:
+                skip_count += 1
+                continue
+                
+            try:
+                cgpa = float(student['cgpa'])
+                internships = float(student['internships'])
+                projects = float(student['projects'])
+                coding = float(student['coding_skills'])
+                comm = float(student['communication_skills'])
+                aptitude = float(student['aptitude_test_score'])
+                backlogs = float(student['backlogs'])
+                gender = GENDER_MAP.get(student['gender'], 1)
+                deg = DEGREE_MAP.get(student['degree'], 1)
+                
+                avg_score = (cgpa + internships + projects) / 3
+                total_skills = aptitude + comm + coding
+                is_weak = 1 if cgpa < 6 else 0
+                
+                data = np.array([[
+                    cgpa, internships, projects,
+                    coding, comm, aptitude,
+                    backlogs, deg, gender,
+                    avg_score, total_skills, is_weak
+                ]])
+                
+                prediction_val = model.predict(data)[0]
+                prob = model.predict_proba(data)[0][1]
+                result = "Ready to Place" if prediction_val == 1 else "Not Ready to Place"
+                
+                # Upsert to predictions
+                cursor.execute(
+                    "SELECT id FROM predictions WHERE student_name = %s AND student_class = %s AND degree = %s LIMIT 1",
+                    (student['name'], student['student_class'], student['degree'])
+                )
+                existing = cursor.fetchone()
+                
+                if existing:
+                    cursor.execute(
+                        """UPDATE predictions SET
+                               cgpa=%s, internships=%s, projects=%s,
+                               coding_skills=%s, communication_skills=%s,
+                               aptitude_test_score=%s, backlogs=%s, gender=%s,
+                               avg_score=%s, total_skills=%s, is_weak=%s,
+                               prediction_result=%s, probability=%s,
+                               created_at=%s
+                           WHERE id=%s""",
+                        (
+                            cgpa, internships, projects,
+                            coding, comm, aptitude, backlogs, student['gender'],
+                            round(avg_score, 4), round(total_skills, 4), is_weak,
+                            result, round(prob * 100, 2), datetime.now(),
+                            existing['id']
+                        )
+                    )
+                else:
+                    cursor.execute(
+                        """INSERT INTO predictions
+                               (student_name, student_class, cgpa, internships, projects,
+                                coding_skills, communication_skills, aptitude_test_score,
+                                backlogs, degree, gender, avg_score, total_skills, is_weak,
+                                prediction_result, probability, created_at)
+                           VALUES
+                               (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (
+                            student['name'], student['student_class'], cgpa, internships, projects,
+                            coding, comm, aptitude, backlogs,
+                            student['degree'], student['gender'],
+                            round(avg_score, 4), round(total_skills, 4), is_weak,
+                            result, round(prob * 100, 2), datetime.now()
+                        )
+                    )
+                success_count += 1
+            except Exception as e:
+                print(f"[BULK PREDICT ERROR] Student {student['name']}: {e}")
+                error_count += 1
+                
+        conn.commit()
+        
+        msg = f"Bulk Prediction Complete for {degree} - {student_class}: {success_count} predicted."
+        if skip_count > 0:
+            msg += f" Skipped {skip_count} (tests not completed)."
+        if error_count > 0:
+            msg += f" {error_count} errors occurred."
+            
+        flash(msg, "success" if success_count > 0 else "warning")
+        
+    except Exception as e:
+        print(f"[PREDICTION ERROR] {e}")
+        flash(f"Error predicting for students: {e}", "error")
+    finally:
+        cursor.close()
+        conn.close()
+        
+    return redirect(url_for('prediction_form'))
 
 
 @app.route('/download_template')
@@ -601,13 +902,13 @@ def dashboard():
         total_predictions = cursor.fetchone()["total"]
 
         cursor.execute(
-            "SELECT COUNT(*) AS cnt FROM predictions WHERE prediction_result = 'Placed' AND degree = %s AND student_class = %s",
+            "SELECT COUNT(*) AS cnt FROM predictions WHERE prediction_result = 'Ready to Place' AND degree = %s AND student_class = %s",
             (selected_degree, selected_class)
         )
         placed_count = cursor.fetchone()["cnt"]
 
         cursor.execute(
-            "SELECT COUNT(*) AS cnt FROM predictions WHERE prediction_result = 'Not Placed' AND degree = %s AND student_class = %s",
+            "SELECT COUNT(*) AS cnt FROM predictions WHERE prediction_result = 'Not Ready to Place' AND degree = %s AND student_class = %s",
             (selected_degree, selected_class)
         )
         not_placed_count = cursor.fetchone()["cnt"]
@@ -622,8 +923,8 @@ def dashboard():
         cursor.execute("""
             SELECT student_class, degree,
                    COUNT(*) AS total,
-                   SUM(prediction_result = 'Placed') AS placed,
-                   SUM(prediction_result = 'Not Placed') AS not_placed
+                   SUM(prediction_result = 'Ready to Place') AS placed,
+                   SUM(prediction_result = 'Not Ready to Place') AS not_placed
             FROM predictions
             WHERE degree = %s AND student_class = %s
             GROUP BY student_class, degree
@@ -693,9 +994,9 @@ def dashboard_export():
         params = [degree, student_class]
 
         if filter_type == 'placed':
-            query += " AND prediction_result = 'Placed'"
+            query += " AND prediction_result = 'Ready to Place'"
         elif filter_type == 'not_placed':
-            query += " AND prediction_result = 'Not Placed'"
+            query += " AND prediction_result = 'Not Ready to Place'"
 
         query += " ORDER BY created_at DESC"
         
@@ -728,8 +1029,8 @@ def dashboard_export():
             }
             recs = recommend(student_dict)
             
-            # If the student is already Placed and has no major flaws, it says 'You are on track'
-            # If the user specifically wants reasons for Not Placed, this will accurately reflect the flaws.
+            # If the student is already Ready to Place and has no major flaws, it says 'You are on track'
+            # If the user specifically wants reasons for Not Ready to Place, this will accurately reflect the flaws.
             row['recommendation'] = " | ".join(recs)
 
             writer.writerow(row)
@@ -776,6 +1077,148 @@ def dashboard_classes():
         cursor.close()
         conn.close()
 
+
+# ─── Student Portal Routes ──────────────────────────────────────────────────
+
+@app.route('/student/register', methods=['GET', 'POST'])
+def student_register():
+    if session.get('student_logged_in'):
+        return redirect(url_for('student_dashboard'))
+    error = None
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        degree = request.form.get('degree', '').strip()
+        student_class = request.form.get('student_class', '').strip()
+        gender = request.form.get('gender', '').strip()
+        cgpa = request.form.get('cgpa', 0)
+        internships = request.form.get('internships', 0)
+        projects = request.form.get('projects', 0)
+        backlogs = request.form.get('backlogs', 0)
+
+        conn = get_db_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """INSERT INTO students (name, email, password_hash, degree, student_class, gender, cgpa, internships, projects, backlogs) 
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (name, email, generate_password_hash(password), degree, student_class, gender, cgpa, internships, projects, backlogs)
+                )
+                conn.commit()
+                flash("Registration successful. Please log in.", "success")
+                return redirect(url_for('student_login'))
+            except Error as e:
+                if 'Duplicate entry' in str(e):
+                    error = 'Email already registered.'
+                else:
+                    error = f'Database error: {e}'
+            finally:
+                cursor.close()
+                conn.close()
+        else:
+            error = 'Database connection failed.'
+    return render_template('student_register.html', error=error)
+
+
+@app.route('/student/login', methods=['GET', 'POST'])
+def student_login():
+    if session.get('student_logged_in'):
+        return redirect(url_for('student_dashboard'))
+    error = None
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        conn = get_db_connection()
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM students WHERE email = %s", (email,))
+                student = cursor.fetchone()
+            finally:
+                cursor.close()
+                conn.close()
+            
+            if student and check_password_hash(student['password_hash'], password):
+                session['student_logged_in'] = True
+                session['student_id'] = student['id']
+                session['student_name'] = student['name']
+                return redirect(url_for('student_dashboard'))
+            else:
+                error = 'Invalid email or password.'
+        else:
+            error = 'Database connection failed.'
+    return render_template('student_login.html', error=error)
+
+@app.route('/student/logout')
+def student_logout():
+    session.pop('student_logged_in', None)
+    session.pop('student_id', None)
+    session.pop('student_name', None)
+    return redirect(url_for('index'))
+
+@app.route('/student/dashboard')
+@student_login_required
+def student_dashboard():
+    conn = get_db_connection()
+    if not conn:
+        return "Database error"
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM students WHERE id = %s", (session['student_id'],))
+        student = cursor.fetchone()
+        
+        cursor.execute("SELECT * FROM predictions WHERE student_name = %s AND student_class = %s AND degree = %s ORDER BY created_at DESC LIMIT 1",
+                       (student['name'], student['student_class'], student['degree']))
+        prediction = cursor.fetchone()
+        
+        # Determine if tests are taken
+        tests_taken = {
+            'coding': student['coding_skills'] is not None,
+            'communication': student['communication_skills'] is not None,
+            'aptitude': student['aptitude_test_score'] is not None
+        }
+    finally:
+        cursor.close()
+        conn.close()
+    return render_template('student_dashboard.html', student=student, prediction=prediction, tests_taken=tests_taken)
+
+@app.route('/student/test/<test_type>', methods=['GET', 'POST'])
+@student_login_required
+def student_test(test_type):
+    if test_type not in ['coding', 'communication', 'aptitude']:
+        return redirect(url_for('student_dashboard'))
+        
+    if request.method == 'POST':
+        # Simple score calculation based on form
+        score = 0
+        if test_type == 'coding':
+            score = int(request.form.get('q1', 0)) + int(request.form.get('q2', 0)) + int(request.form.get('q3', 0)) + int(request.form.get('q4', 0)) + int(request.form.get('q5', 0))
+            score = min(max(score, 0), 10)
+            col = 'coding_skills'
+        elif test_type == 'communication':
+            score = int(request.form.get('q1', 0)) + int(request.form.get('q2', 0)) + int(request.form.get('q3', 0)) + int(request.form.get('q4', 0)) + int(request.form.get('q5', 0))
+            score = min(max(score, 0), 10)
+            col = 'communication_skills'
+        elif test_type == 'aptitude':
+            score = (int(request.form.get('q1', 0)) + int(request.form.get('q2', 0)) + int(request.form.get('q3', 0)) + int(request.form.get('q4', 0)) + int(request.form.get('q5', 0))) * 10
+            score = min(max(score, 0), 100)
+            col = 'aptitude_test_score'
+            
+        conn = get_db_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute(f"UPDATE students SET {col} = %s WHERE id = %s", (score, session['student_id']))
+                conn.commit()
+                flash(f"{test_type.capitalize()} test submitted successfully! Score: {score}", "success")
+            finally:
+                cursor.close()
+                conn.close()
+        return redirect(url_for('student_dashboard'))
+        
+    return render_template('student_test.html', test_type=test_type)
 
 if __name__ == "__main__":
     app.run(debug=True)

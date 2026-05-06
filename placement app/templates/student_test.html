@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ test_type|capitalize }} Test - PlacementAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: #1e293b; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        h1 { color: #38bdf8; margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
+        .question { margin-bottom: 2rem; }
+        .question h3 { color: #e2e8f0; margin-bottom: 1rem; }
+        .options label { display: block; background: #0f172a; padding: 1rem; margin-bottom: 0.5rem; border-radius: 8px; border: 1px solid #334155; cursor: pointer; transition: all 0.2s; }
+        .options label:hover { border-color: #38bdf8; }
+        .options input { margin-right: 1rem; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 1rem 2rem; border-radius: 6px; font-weight: 600; font-size: 1.1rem; cursor: pointer; width: 100%; transition: background 0.2s; }
+        button:hover { background: #0ea5e9; }
+        .back-link { display: inline-block; margin-bottom: 1rem; color: #94a3b8; text-decoration: none; }
+        .back-link:hover { color: #cbd5e1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('student_dashboard') }}" class="back-link">&larr; Back to Dashboard</a>
+        <div class="card">
+            <h1>{{ test_type|capitalize }} Assessment</h1>
+            <p style="color: #94a3b8; margin-bottom: 2rem;">Please answer the following 5 questions carefully. Your score will be calculated and saved immediately.</p>
+            
+            <form method="POST">
+                {% if test_type == 'coding' %}
+                    <div class="question">
+                        <h3>1. What is the output of print(type([])) in Python?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q1" value="0" required> &lt;class 'tuple'&gt;</label>
+                            <label><input type="radio" name="q1" value="2"> &lt;class 'list'&gt;</label>
+                            <label><input type="radio" name="q1" value="0"> &lt;class 'dict'&gt;</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>2. Which of the following is not a valid loop in Python?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q2" value="0" required> for</label>
+                            <label><input type="radio" name="q2" value="0"> while</label>
+                            <label><input type="radio" name="q2" value="2"> do-while</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>3. What does SQL stand for?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q3" value="2" required> Structured Query Language</label>
+                            <label><input type="radio" name="q3" value="0"> Simple Query Language</label>
+                            <label><input type="radio" name="q3" value="0"> Systematic Query Language</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>4. In OOP, what is polymorphism?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q4" value="0" required> Hiding internal data</label>
+                            <label><input type="radio" name="q4" value="2"> Ability to take multiple forms</label>
+                            <label><input type="radio" name="q4" value="0"> Inheriting properties</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>5. Which data structure uses LIFO?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q5" value="0" required> Queue</label>
+                            <label><input type="radio" name="q5" value="2"> Stack</label>
+                            <label><input type="radio" name="q5" value="0"> Tree</label>
+                        </div>
+                    </div>
+                {% elif test_type == 'communication' %}
+                    <div class="question">
+                        <h3>1. Which of the following is non-verbal communication?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q1" value="2" required> Body language</label>
+                            <label><input type="radio" name="q1" value="0"> Email</label>
+                            <label><input type="radio" name="q1" value="0"> Telephone</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>2. The primary purpose of active listening is to:</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q2" value="0" required> Formulate a response</label>
+                            <label><input type="radio" name="q2" value="2"> Understand the speaker's message</label>
+                            <label><input type="radio" name="q2" value="0"> Argue with the speaker</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>3. In an email, what does "CC" stand for?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q3" value="2" required> Carbon Copy</label>
+                            <label><input type="radio" name="q3" value="0"> Copy Cat</label>
+                            <label><input type="radio" name="q3" value="0"> Central Copy</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>4. A good presentation should have:</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q4" value="0" required> Too much text on slides</label>
+                            <label><input type="radio" name="q4" value="2"> Clear structure and visual aids</label>
+                            <label><input type="radio" name="q4" value="0"> No eye contact</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>5. Which is the best way to handle a difficult question?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q5" value="0" required> Ignore it</label>
+                            <label><input type="radio" name="q5" value="0"> Give a fake answer</label>
+                            <label><input type="radio" name="q5" value="2"> Acknowledge it and answer honestly</label>
+                        </div>
+                    </div>
+                {% elif test_type == 'aptitude' %}
+                    <div class="question">
+                        <h3>1. What is the next number in the series: 2, 4, 8, 16, ?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q1" value="0" required> 24</label>
+                            <label><input type="radio" name="q1" value="2"> 32</label>
+                            <label><input type="radio" name="q1" value="0"> 64</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>2. If A is brother of B, and B is sister of C. How is A related to C?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q2" value="2" required> Brother</label>
+                            <label><input type="radio" name="q2" value="0"> Cousin</label>
+                            <label><input type="radio" name="q2" value="0"> Uncle</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>3. 20% of 150 is:</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q3" value="0" required> 20</label>
+                            <label><input type="radio" name="q3" value="2"> 30</label>
+                            <label><input type="radio" name="q3" value="0"> 40</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>4. A train running at 72 km/hr crosses a pole in 10 sec. What is the length of the train?</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q4" value="0" required> 150m</label>
+                            <label><input type="radio" name="q4" value="2"> 200m</label>
+                            <label><input type="radio" name="q4" value="0"> 100m</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <h3>5. Find the odd one out: Apple, Orange, Banana, Potato.</h3>
+                        <div class="options">
+                            <label><input type="radio" name="q5" value="0" required> Apple</label>
+                            <label><input type="radio" name="q5" value="0"> Banana</label>
+                            <label><input type="radio" name="q5" value="2"> Potato</label>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <button type="submit">Submit Test</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

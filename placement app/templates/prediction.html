@@ -97,11 +97,96 @@
 {% endwith %}
 
 <div class="tabs-container">
-    <button class="tab-btn active" onclick="showTab('single')" id="tab-single">Single Student</button>
+    <button class="tab-btn active" onclick="showTab('students')" id="tab-students">Registered Students</button>
+    <button class="tab-btn" onclick="showTab('single')" id="tab-single">Manual Entry</button>
     <button class="tab-btn" onclick="showTab('bulk')" id="tab-bulk">Bulk CSV Upload</button>
 </div>
 
-<div class="pred-wrap" id="single-pred-section">
+<div class="pred-wrap" id="students-pred-section">
+<div class="pred-card" style="padding: 24px; max-width: 1000px; width: 100%; box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="margin: 0; color: #1e293b;">Registered Students List</h3>
+        <form action="/admin/predict_registered_bulk" method="POST" style="display: flex; gap: 10px; align-items: center; background: #f8faff; padding: 10px 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <select id="filterDegree" name="degree" required onchange="filterStudents()" style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; background: #fff;">
+                <option value="" disabled selected>Select Degree</option>
+                <option value="B.Tech">B.Tech</option>
+                <option value="BCA">BCA</option>
+                <option value="MCA">MCA</option>
+                <option value="B.Sc">B.Sc</option>
+            </select>
+            <select id="filterClass" name="student_class" required onchange="filterStudents()" style="padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; background: #fff;">
+                <option value="" disabled selected>Select Class</option>
+                <option value="FY">FY</option>
+                <option value="SY">SY</option>
+                <option value="TY">TY</option>
+                <option value="Final Year">Final Year</option>
+            </select>
+            <button type="submit" style="background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 700; box-shadow: 0 4px 12px rgba(5,150,105,0.2);">
+                ⚡ Predict All
+            </button>
+        </form>
+    </div>
+    
+    {% if students %}
+        <div id="studentsBlankState" style="text-align: center; padding: 40px 20px; color: #64748b; background: #f8faff; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <div style="font-size: 2rem; margin-bottom: 10px;">🎓</div>
+            <h4 style="margin: 0 0 5px 0; color: #475569;">No Filter Selected</h4>
+            <p style="margin: 0; font-size: 0.95rem;">Please select both a Degree and Class above to view the student list.</p>
+        </div>
+
+        <div id="studentsTableContainer" style="display: none; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b;">
+                        <th style="padding: 12px 8px;">Name</th>
+                        <th style="padding: 12px 8px;">Class/Degree</th>
+                        <th style="padding: 12px 8px;">Tests Taken</th>
+                        <th style="padding: 12px 8px;">Prediction</th>
+                        <th style="padding: 12px 8px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                {% for s in students %}
+                    <tr style="border-bottom: 1px solid #e2e8f0;" class="student-row" data-degree="{{ s.degree }}" data-class="{{ s.student_class }}">
+                        <td style="padding: 12px 8px; font-weight: 500;">{{ s.name }}<br><small style="color:#64748b;font-weight:400;">{{ s.email }}</small></td>
+                        <td style="padding: 12px 8px;">{{ s.student_class }} - {{ s.degree }}</td>
+                        <td style="padding: 12px 8px;">
+                            {% if s.tests_complete %}
+                                <span style="color: #059669; background: #d1fae5; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">Yes</span>
+                            {% else %}
+                                <span style="color: #dc2626; background: #fee2e2; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">No</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px 8px;">
+                            {% if s.has_prediction %}
+                                {% if s.prediction == 'Ready to Place' %}
+                                    <span style="color: #059669; font-weight: 600;">{{ s.prediction }}</span>
+                                {% else %}
+                                    <span style="color: #dc2626; font-weight: 600;">{{ s.prediction }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #64748b;">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px 8px;">
+                            <form action="{{ url_for('admin_predict_student', student_id=s.id) }}" method="POST" style="margin:0;">
+                                <button type="submit" style="background:#4f46e5;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;" {% if not s.tests_complete %}disabled title="Student must complete tests first" style="opacity:0.5;cursor:not-allowed;"{% endif %}>
+                                    {% if s.has_prediction %}Re-Predict{% else %}Predict{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: #64748b; text-align: center; padding: 20px;">No registered students found.</p>
+    {% endif %}
+</div>
+</div>
+
+<div class="pred-wrap" id="single-pred-section" style="display: none;">
 <div class="pred-card">
 
     <form action="/predict" method="post" id="predictionForm">
@@ -236,16 +321,72 @@
     });
 
     function showTab(tabName) {
+        document.getElementById('students-pred-section').style.display = 'none';
+        document.getElementById('single-pred-section').style.display = 'none';
+        document.getElementById('bulk-pred-section').style.display = 'none';
+        document.getElementById('tab-students').classList.remove('active');
+        document.getElementById('tab-single').classList.remove('active');
+        document.getElementById('tab-bulk').classList.remove('active');
+        
         if (tabName === 'single') {
             document.getElementById('single-pred-section').style.display = 'block';
-            document.getElementById('bulk-pred-section').style.display = 'none';
             document.getElementById('tab-single').classList.add('active');
-            document.getElementById('tab-bulk').classList.remove('active');
-        } else {
-            document.getElementById('single-pred-section').style.display = 'none';
+        } else if (tabName === 'bulk') {
             document.getElementById('bulk-pred-section').style.display = 'block';
-            document.getElementById('tab-single').classList.remove('active');
             document.getElementById('tab-bulk').classList.add('active');
+        } else {
+            document.getElementById('students-pred-section').style.display = 'block';
+            document.getElementById('tab-students').classList.add('active');
+        }
+    }
+    function filterStudents() {
+        const selectedDegree = document.getElementById('filterDegree').value;
+        const selectedClass = document.getElementById('filterClass').value;
+        const rows = document.querySelectorAll('.student-row');
+        
+        const blankState = document.getElementById('studentsBlankState');
+        const tableContainer = document.getElementById('studentsTableContainer');
+        
+        // If either is not selected, show blank state and hide table
+        if (!selectedDegree || !selectedClass) {
+            if (blankState) blankState.style.display = 'block';
+            if (tableContainer) tableContainer.style.display = 'none';
+            return;
+        }
+        
+        // Both are selected, show table and hide blank state
+        if (blankState) blankState.style.display = 'none';
+        if (tableContainer) tableContainer.style.display = 'block';
+        
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const rowDegree = row.getAttribute('data-degree');
+            const rowClass = row.getAttribute('data-class');
+            
+            if (rowDegree === selectedDegree && rowClass === selectedClass) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Optional: show a message if 0 students found for the combination
+        let emptyMsgRow = document.getElementById('emptyFilterRow');
+        if (visibleCount === 0) {
+            if (!emptyMsgRow) {
+                const tbody = document.getElementById('studentsTableBody');
+                const tr = document.createElement('tr');
+                tr.id = 'emptyFilterRow';
+                tr.innerHTML = `<td colspan="5" style="text-align:center; padding: 20px; color: #64748b;">No registered students found for ${selectedDegree} - ${selectedClass}.</td>`;
+                tbody.appendChild(tr);
+            } else {
+                emptyMsgRow.innerHTML = `<td colspan="5" style="text-align:center; padding: 20px; color: #64748b;">No registered students found for ${selectedDegree} - ${selectedClass}.</td>`;
+                emptyMsgRow.style.display = '';
+            }
+        } else if (emptyMsgRow) {
+            emptyMsgRow.style.display = 'none';
         }
     }
 </script>

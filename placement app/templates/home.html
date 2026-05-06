@@ -26,7 +26,7 @@
     <div class="stat-card card-green">
         <div class="stat-icon">✅</div>
         <div class="stat-info">
-            <span class="stat-label">Total Placed</span>
+            <span class="stat-label">Ready to Place</span>
             <span class="stat-value">{{ overall.placed or 0 }}</span>
         </div>
     </div>
@@ -34,7 +34,7 @@
     <div class="stat-card card-red">
         <div class="stat-icon">❌</div>
         <div class="stat-info">
-            <span class="stat-label">Not Placed</span>
+            <span class="stat-label">Not Ready to Place</span>
             <span class="stat-value">{{ overall.not_placed or 0 }}</span>
         </div>
     </div>
@@ -81,11 +81,11 @@
                     <span class="cs-value cs-total">{{ overall.students }}</span>
                 </div>
                 <div class="cs-item">
-                    <span class="cs-label">Placed</span>
+                    <span class="cs-label">Ready to Place</span>
                     <span class="cs-value cs-placed">{{ overall.placed }}</span>
                 </div>
                 <div class="cs-item">
-                    <span class="cs-label">Not Placed</span>
+                    <span class="cs-label">Not Ready to Place</span>
                     <span class="cs-value cs-notplaced">{{ overall.not_placed }}</span>
                 </div>
             </div>
@@ -144,11 +144,11 @@
                     <span class="cs-value cs-total">${stats.students}</span>
                 </div>
                 <div class="cs-item">
-                    <span class="cs-label">Placed</span>
+                    <span class="cs-label">Ready to Place</span>
                     <span class="cs-value cs-placed">${stats.placed}</span>
                 </div>
                 <div class="cs-item">
-                    <span class="cs-label">Not Placed</span>
+                    <span class="cs-label">Not Ready to Place</span>
                     <span class="cs-value cs-notplaced">${stats.not_placed}</span>
                 </div>
             </div>

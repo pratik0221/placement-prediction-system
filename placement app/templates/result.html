@@ -88,16 +88,16 @@
     </div>
     {% endif %}
 
-    <div class="result-badge {{ 'placed' if prediction == 'Placed' else 'not-placed' }}">
-        {{ '🎉 Placed' if prediction == 'Placed' else '⚠️ Not Placed' }}
+    <div class="result-badge {{ 'placed' if prediction == 'Ready to Place' else 'not-placed' }}">
+        {{ '🎉 Ready to Place' if prediction == 'Ready to Place' else '⚠️ Not Ready to Place' }}
     </div>
 
     <div class="prob-wrap">
-        <span class="prob-label">Placement Probability</span>
+        <span class="prob-label">Placement Chance</span>
         <span class="prob-value">{{ probability }}%</span>
     </div>
     <div class="prob-bar-wrap">
-        <div class="prob-bar {{ 'placed' if prediction == 'Placed' else 'not-placed' }}"
+        <div class="prob-bar {{ 'placed' if prediction == 'Ready to Place' else 'not-placed' }}"
              style="width: {{ probability }}%"></div>
     </div>
 
