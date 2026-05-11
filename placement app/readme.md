@@ -18,6 +18,21 @@ It also provides **personalized recommendations** to improve placement probabili
 * 💡 AI-based recommendations for improvement
 * 🌐 Interactive web UI (Flask + HTML + CSS)
 * ⚡ Real-time prediction
+* 📈 Advanced analytics with Power BI Dashboard
+
+---
+
+## 📈 Power BI Analytics Dashboard
+
+We have also created a comprehensive **Power BI Dashboard** to visualize student placement trends, degree-wise performance, and skill analytics in greater depth.
+
+### How to View the Dashboard:
+1. **Download the File**: You can find the `.pbix` file in the repository (e.g., in a `powerbi/` folder).
+2. **Open in Power BI Desktop**: Download and install [Power BI Desktop](https://powerbi.microsoft.com/desktop/) (free), then open the `.pbix` file.
+3. **Refresh the Data**: Since the dashboard is not published online, it relies on your local MySQL database. Once you open the `.pbix` file, click the **"Refresh"** button in the Home ribbon to fetch the latest student placement data from your local database.
+4. **Screenshots**: Check out the previews below! *(You can upload your screenshots to GitHub and add them here)*
+
+*(Example: `![Power BI Dashboard Overview](link-to-your-image.png)`)*
 
 ---
 
