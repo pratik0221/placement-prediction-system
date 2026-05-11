@@ -15,11 +15,12 @@
 <!-- Overall stat cards -->
 <section class="stat-grid" aria-label="Overall Statistics">
 
-    <div class="stat-card card-blue">
+    <div class="stat-card card-blue" style="cursor: pointer;" onclick="openStudentsModal()">
         <div class="stat-icon">👥</div>
         <div class="stat-info">
             <span class="stat-label">Unique Students</span>
             <span class="stat-value">{{ overall.total_students or 0 }}</span>
+            <span style="font-size: 0.75rem; color: #4f46e5; font-weight: 700; margin-top: 4px; display: inline-block;">View & Manage ➔</span>
         </div>
     </div>
 
@@ -106,6 +107,85 @@
     {% endfor %}
 </div>
 
+<!-- All Students Modal -->
+<div id="studentsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 9999; backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 20px; width: 95%; max-width: 900px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden;">
+        <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between; align-items: center; background: #f8faff;">
+            <h3 style="margin: 0; color: #1e293b; font-size: 1.25rem;">All Unique Students</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="modalDegreeFilter" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #cbd5e1; font-family: 'Outfit', sans-serif;">
+                    <option value="">-- Select Degree --</option>
+                    {% set unique_degrees = [] %}
+                    {% for student in all_students %}
+                        {% if student.degree not in unique_degrees %}
+                            {% set _ = unique_degrees.append(student.degree) %}
+                            <option value="{{ student.degree }}">{{ student.degree }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <select id="modalClassFilter" style="padding: 0.4rem; border-radius: 6px; border: 1px solid #cbd5e1; font-family: 'Outfit', sans-serif;">
+                    <option value="">-- Select Class --</option>
+                    {% set unique_classes = [] %}
+                    {% for student in all_students %}
+                        {% if student.student_class not in unique_classes %}
+                            {% set _ = unique_classes.append(student.student_class) %}
+                            <option value="{{ student.student_class }}">{{ student.student_class }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <button onclick="filterModalStudents()" style="background: #4f46e5; color: white; padding: 0.4rem 1rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif;">Show</button>
+                <button onclick="showAllStudents()" style="background: #e2e8f0; color: #1e293b; padding: 0.4rem 1rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif;">Show All</button>
+                <button onclick="closeStudentsModal()" style="background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer; line-height: 1; margin-left: 10px;">&times;</button>
+            </div>
+        </div>
+        <div style="padding: 0; overflow-y: auto; flex: 1; position: relative;">
+            {% if all_students %}
+            <table id="modalStudentTable" style="display: none; width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                <thead style="position: sticky; top: 0; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b;">
+                        <th style="padding: 12px 24px;">Name</th>
+                        <th style="padding: 12px 24px;">Degree</th>
+                        <th style="padding: 12px 24px;">Class</th>
+                        <th style="padding: 12px 24px;">Joined Date</th>
+                        <th style="padding: 12px 24px; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="modalStudentBody">
+                    {% for student in all_students %}
+                    <tr class="modal-student-row" data-degree="{{ student.degree }}" data-class="{{ student.student_class }}" style="border-bottom: 1px solid #e2e8f0; display: none;">
+                        <td style="padding: 12px 24px; font-weight: 600; color: #1e293b;">{{ student.name }}<br><small style="color:#64748b; font-weight:400;">{{ student.email }}</small></td>
+                        <td style="padding: 12px 24px; color: #475569;"><span style="background: #e0e7ff; color: #4f46e5; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 0.8rem;">{{ student.degree }}</span></td>
+                        <td style="padding: 12px 24px; color: #475569;">{{ student.student_class }}</td>
+                        <td style="padding: 12px 24px; color: #64748b;">{{ student.created_at.strftime('%d %b %Y') }}</td>
+                        <td style="padding: 12px 24px; text-align: right;">
+                            <form action="{{ url_for('admin_delete_student') }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this student and all their predictions?');" style="margin: 0;">
+                                <input type="hidden" name="student_name" value="{{ student.name }}">
+                                <input type="hidden" name="degree" value="{{ student.degree }}">
+                                <input type="hidden" name="student_class" value="{{ student.student_class }}">
+                                <button type="submit" style="background: rgba(220,38,38,0.1); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Outfit', sans-serif; transition: 0.2s;">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div id="modalEmptyState" style="padding: 40px 20px; text-align: center; color: #64748b;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">🔍</div>
+                <p style="margin: 0;">Please select a Degree and Class to view students.</p>
+            </div>
+            {% else %}
+            <div style="padding: 40px 20px; text-align: center; color: #64748b;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">📭</div>
+                <p style="margin: 0;">No unique students found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 <script>
     // Injected data from backend
     const degreeData = {{ degree_stats | tojson | safe }};
@@ -167,6 +247,97 @@
             window.location.href = '/dashboard?degree=' + encodeURIComponent(degree);
         } else {
             window.location.href = '/dashboard?degree=' + encodeURIComponent(degree) + '&class=' + encodeURIComponent(className);
+        }
+    }
+
+    function openStudentsModal() {
+        const modal = document.getElementById('studentsModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeStudentsModal() {
+        const modal = document.getElementById('studentsModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+    
+    // Close modal on click outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('studentsModal');
+        if (event.target === modal) {
+            closeStudentsModal();
+        }
+    }
+
+    function filterModalStudents() {
+        const d = document.getElementById('modalDegreeFilter').value;
+        const c = document.getElementById('modalClassFilter').value;
+        const table = document.getElementById('modalStudentTable');
+        const emptyState = document.getElementById('modalEmptyState');
+        const rows = document.querySelectorAll('.modal-student-row');
+        
+        if (!table || !emptyState) {
+            alert("No students are currently registered in the system!");
+            return;
+        }
+
+        if (!d || !c) {
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            emptyState.innerHTML = `<div style="font-size: 2rem; margin-bottom: 10px;">🔍</div><p style="margin: 0;">Please select both Degree and Class and click <b>Show</b> to view filtered students.</p>`;
+            return;
+        }
+        
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+        
+        let hasVisible = false;
+        rows.forEach(row => {
+            if (row.dataset.degree === d && row.dataset.class === c) {
+                row.style.display = '';
+                hasVisible = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        if (!hasVisible) {
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            emptyState.innerHTML = `<div style="font-size: 2rem; margin-bottom: 10px;">📭</div><p style="margin: 0;">No students found for ${d} - ${c}.</p>`;
+        }
+    }
+
+    function showAllStudents() {
+        document.getElementById('modalDegreeFilter').value = "";
+        document.getElementById('modalClassFilter').value = "";
+        const table = document.getElementById('modalStudentTable');
+        const emptyState = document.getElementById('modalEmptyState');
+        const rows = document.querySelectorAll('.modal-student-row');
+        
+        if (!table || !emptyState) {
+            alert("No students are currently registered in the system!");
+            return;
+        }
+        
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+        
+        let hasVisible = false;
+        rows.forEach(row => {
+            row.style.display = '';
+            hasVisible = true;
+        });
+        
+        if (!hasVisible) {
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            emptyState.innerHTML = `<div style="font-size: 2rem; margin-bottom: 10px;">📭</div><p style="margin: 0;">No students found in the database.</p>`;
         }
     }
 </script>

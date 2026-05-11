@@ -68,3 +68,16 @@ CREATE TABLE IF NOT EXISTS students (
     aptitude_test_score FLOAT DEFAULT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ── Triggers ─────────────────────────────────────────────────
+DELIMITER //
+CREATE TRIGGER after_student_delete
+AFTER DELETE ON students
+FOR EACH ROW
+BEGIN
+    DELETE FROM predictions 
+    WHERE student_name = OLD.name 
+      AND degree = OLD.degree 
+      AND student_class = OLD.student_class;
+END;//
+DELIMITER ;

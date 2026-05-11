@@ -132,6 +132,21 @@ def init_db():
                 (DEFAULT_ADMIN_USER, generate_password_hash(DEFAULT_ADMIN_PASS))
             )
             print(f"[INIT] Default admin created → username: '{DEFAULT_ADMIN_USER}' / password: '{DEFAULT_ADMIN_PASS}'")
+        
+        # Add a trigger to automatically delete predictions when a student is deleted from the database
+        cursor.execute("DROP TRIGGER IF EXISTS after_student_delete")
+        cursor.execute("""
+            CREATE TRIGGER after_student_delete
+            AFTER DELETE ON students
+            FOR EACH ROW
+            BEGIN
+                DELETE FROM predictions 
+                WHERE student_name = OLD.name 
+                  AND degree = OLD.degree 
+                  AND student_class = OLD.student_class;
+            END;
+        """)
+        
         conn.commit()
     except Error as e:
         print(f"[INIT ERROR] {e}")
@@ -235,9 +250,23 @@ def home_stats():
             degree_stats[d]['overall']['placed'] += placed_val
             degree_stats[d]['overall']['not_placed'] += not_placed_val
 
+        cursor.execute("""
+            SELECT 
+                MAX(id) as id,
+                student_name as name, 
+                degree, 
+                student_class, 
+                MAX(created_at) as created_at
+            FROM predictions 
+            GROUP BY student_name, degree, student_class
+            ORDER BY created_at DESC
+        """)
+        all_students = cursor.fetchall()
+
         return render_template('home.html',
                                overall=overall,
                                degree_stats=degree_stats,
+                               all_students=all_students,
                                active_page='home')
     except Error as e:
         return f"<h3 style='color:red'>DB Error: {e}</h3>"
@@ -307,7 +336,7 @@ def predict():
         ]])
 
         prediction = model.predict(data)[0]
-        prob       = model.predict_proba(data)[0][1]
+        prob       = max(model.predict_proba(data)[0])
         result     = "Ready to Place" if prediction == 1 else "Not Ready to Place"
 
         # ── Recommendations ──────────────────────────────────────────────────
@@ -372,6 +401,28 @@ def predict():
                             result, round(prob * 100, 2), datetime.now()
                         )
                     )
+                # Upsert into students table
+                cursor.execute(
+                    "SELECT id FROM students WHERE name = %s AND student_class = %s AND degree = %s LIMIT 1",
+                    (student_name, student_class, form["Degree"])
+                )
+                existing_student = cursor.fetchone()
+                
+                if not existing_student:
+                    default_password = generate_password_hash("student123")
+                    dummy_email = f"{student_name.lower().replace(' ', '')}.{int(datetime.now().timestamp() * 1000)}@manual.student"
+                    
+                    cursor.execute(
+                        """INSERT INTO students (name, email, password_hash, degree, student_class, gender, cgpa, internships, projects, backlogs, coding_skills, communication_skills, aptitude_test_score)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (student_name, dummy_email, default_password, form["Degree"], student_class, form["Gender"], cgpa, internships, projects, backlogs, coding, comm, aptitude)
+                    )
+                else:
+                    cursor.execute(
+                        """UPDATE students SET cgpa=%s, internships=%s, projects=%s, backlogs=%s, coding_skills=%s, communication_skills=%s, aptitude_test_score=%s
+                           WHERE id=%s""",
+                        (cgpa, internships, projects, backlogs, coding, comm, aptitude, existing_student[0])
+                    )
 
                 conn.commit()
             except Error as e:
@@ -427,6 +478,8 @@ def predict_bulk():
         success_count = 0
         error_count = 0
         
+        default_password = generate_password_hash("student123")
+        
         for row in csv_input:
             try:
                 student_name = row.get("student_name", "Unknown").strip()
@@ -458,7 +511,7 @@ def predict_bulk():
                 ]])
                 
                 prediction = model.predict(data)[0]
-                prob = model.predict_proba(data)[0][1]
+                prob = max(model.predict_proba(data)[0])
                 result = "Ready to Place" if prediction == 1 else "Not Ready to Place"
                 
                 cursor.execute(
@@ -503,6 +556,29 @@ def predict_bulk():
                             round(avg_score, 4), round(total_skills, 4), is_weak,
                             result, round(prob * 100, 2), datetime.now()
                         )
+                    )
+                
+                # Upsert into students table
+                cursor.execute(
+                    "SELECT id FROM students WHERE name = %s AND student_class = %s AND degree = %s LIMIT 1",
+                    (student_name, student_class, degree_str)
+                )
+                existing_student = cursor.fetchone()
+                
+                if not existing_student:
+                    # Generate a unique dummy email
+                    dummy_email = f"{student_name.lower().replace(' ', '')}.{int(datetime.now().timestamp() * 1000)}@bulk.student"
+                    
+                    cursor.execute(
+                        """INSERT INTO students (name, email, password_hash, degree, student_class, gender, cgpa, internships, projects, backlogs, coding_skills, communication_skills, aptitude_test_score)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (student_name, dummy_email, default_password, degree_str, student_class, gender_str, cgpa, internships, projects, backlogs, coding, comm, aptitude)
+                    )
+                else:
+                    cursor.execute(
+                        """UPDATE students SET cgpa=%s, internships=%s, projects=%s, backlogs=%s, coding_skills=%s, communication_skills=%s, aptitude_test_score=%s
+                           WHERE id=%s""",
+                        (cgpa, internships, projects, backlogs, coding, comm, aptitude, existing_student[0])
                     )
                 
                 success_count += 1
@@ -565,7 +641,7 @@ def admin_predict_student(student_id):
         ]])
         
         prediction_val = model.predict(data)[0]
-        prob = model.predict_proba(data)[0][1]
+        prob = max(model.predict_proba(data)[0])
         result = "Ready to Place" if prediction_val == 1 else "Not Ready to Place"
         
         # Upsert to predictions
@@ -680,7 +756,7 @@ def predict_registered_bulk():
                 ]])
                 
                 prediction_val = model.predict(data)[0]
-                prob = model.predict_proba(data)[0][1]
+                prob = max(model.predict_proba(data)[0])
                 result = "Ready to Place" if prediction_val == 1 else "Not Ready to Place"
                 
                 # Upsert to predictions
@@ -942,6 +1018,15 @@ def dashboard():
         """, (selected_degree, selected_class))
         recent = cursor.fetchall()
 
+        # All unique students for modal
+        cursor.execute("""
+            SELECT id, name, email, student_class, degree, created_at
+            FROM students
+            WHERE degree = %s AND student_class = %s
+            ORDER BY name ASC
+        """, (selected_degree, selected_class))
+        unique_students_list = cursor.fetchall()
+
         return render_template(
             "dashboard.html",
             selected_degree=selected_degree,
@@ -954,15 +1039,46 @@ def dashboard():
             not_placed_count=not_placed_count,
             class_data=class_data,
             recent=recent,
+            unique_students_list=unique_students_list,
             active_page='dashboard'
         )
-
 
     except Error as e:
         return f"<h3 style='color:red;font-family:sans-serif'>DB Query Error: {e}</h3>"
     finally:
         cursor.close()
         conn.close()
+
+
+@app.route('/admin/delete_student', methods=['POST'])
+@login_required
+def admin_delete_student():
+    student_name = request.form.get('student_name')
+    degree = request.form.get('degree')
+    student_class = request.form.get('student_class')
+    
+    conn = get_db_connection()
+    if not conn:
+        flash("Database error", "error")
+        return redirect(request.referrer or url_for('home_stats'))
+        
+    try:
+        cursor = conn.cursor()
+        # Delete from predictions using the student details
+        cursor.execute("DELETE FROM predictions WHERE student_name = %s AND degree = %s AND student_class = %s", (student_name, degree, student_class))
+        # Delete from students
+        cursor.execute("DELETE FROM students WHERE name = %s AND degree = %s AND student_class = %s", (student_name, degree, student_class))
+        conn.commit()
+        flash(f"Student '{student_name}' and all associated records were permanently deleted.", "success")
+            
+    except Error as e:
+        print(f"[DELETE ERROR] {e}")
+        flash(f"Error deleting student: {e}", "error")
+    finally:
+        cursor.close()
+        conn.close()
+        
+    return redirect(request.referrer or url_for('dashboard'))
 
 
 @app.route('/dashboard/export')
@@ -1032,6 +1148,9 @@ def dashboard_export():
             # If the student is already Ready to Place and has no major flaws, it says 'You are on track'
             # If the user specifically wants reasons for Not Ready to Place, this will accurately reflect the flaws.
             row['recommendation'] = " | ".join(recs)
+
+            if row.get('probability') is not None:
+                row['probability'] = f"{row['probability']}%"
 
             writer.writerow(row)
 
